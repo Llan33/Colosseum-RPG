@@ -1758,31 +1758,31 @@ void EnemyScaling(Entity& enemy){
         break;
         
         case 0:
-            switch (Wave){
-                case 6:
-                Entity W6(9,5,4,3,0,0,0,0, ENEMY, "Enemy");
-                break;
+            // switch (Wave){
+            //     case 6:
+            //     Entity W6(9,5,4,3,0,0,0,0, ENEMY, "Enemy");
+            //     break;
 
-                case 5:
-                Entity W5(80,5,4,3,0,0,0,0, ENEMY, "Enemy");
-                break;
+            //     case 5:
+            //     Entity W5(80,5,4,3,0,0,0,0, ENEMY, "Enemy");
+            //     break;
 
-                case 4:
-                Entity W4(50,5,4,3,0,0,0,0, ENEMY, "Enemy");
-                break;
+            //     case 4:
+            //     Entity W4(50,5,4,3,0,0,0,0, ENEMY, "Enemy");
+            //     break;
 
-                case 3:
-                Entity W3(28,5,4,3,0,0,0,0, ENEMY, "Enemy");
-                break;
+            //     case 3:
+            //     Entity W3(28,5,4,3,0,0,0,0, ENEMY, "Enemy");
+            //     break;
 
-                case 2:
-                Entity W2(16,5,4,3,0,0,0,0, ENEMY, "Enemy");
-                break;
+            //     case 2:
+            //     Entity W2(16,5,4,3,0,0,0,0, ENEMY, "Enemy");
+            //     break;
 
-                case 1:
-                Entity W1(10,5,4,3,0,0,0,0, ENEMY, "Enemy");
-                break;
-            }
+            //     case 1:
+            //     Entity W1(10,5,4,3,0,0,0,0, ENEMY, "Enemy");
+            //     break;
+            // }
         break;
     }
 
