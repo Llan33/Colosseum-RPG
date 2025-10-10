@@ -1,0 +1,1 @@
+eMAXHP = eMAXHP * 1.5; eHP = eMAXHP; eAC = eAC * 1.5; eATK = eATK * 1.4;
