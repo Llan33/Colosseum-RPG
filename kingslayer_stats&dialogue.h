@@ -220,6 +220,7 @@ enum EntityType{
     PLAYER1,
     PLAYER2,
     ENEMY,
+    FALLEN,
     BOSS,
     CHAMPION,
     KING

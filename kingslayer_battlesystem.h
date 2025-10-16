@@ -1478,7 +1478,7 @@ void VictoryScreen(Entity& Player, Entity& Enemy){
 
     FullHeal(Enemy);
 
-    GainGold = ((Player.Misc.Level/2 + 1) + Enemy.Misc.Level + (Player.Stat.Gold/5) + 1) * Player.Misc.GoldMult;
+    GainGold = ((Player.Misc.Level/2 + 1) + Enemy.Misc.Level + (Player.Stat.Gold/10) + 1) * Player.Misc.GoldMult;
     GainXP =   ((EnemyTotalStats) * ((Enemy.Misc.Level * 0.25) + 1) * Player.Misc.XPMult);
     GainMana = (Player.Stat.MAXMANA / 5) * Player.Misc.ManaMult;
 
@@ -1747,57 +1747,113 @@ void RelicDrop(Entity& Player){
 
 void EnemyScaling(Entity& enemy){
 
+    enemy.ItemBag.Item1 = ItemGetRandomEnemy();
+
+    EntityType Type = enemy.Misc.Type;
+
+Entity F3(96,30,36,3,20,0,5,0, Type, "Enemy");
+Entity F2(74,25,30,3,14,0,4,0, Type, "Enemy");
+Entity F1(50,20,22,3,10,0,3,0, Type, "Enemy");
+
+Entity W6(1,70,4,3,0,0,0,0, FALLEN, "Fallen");
+Entity W5(112,25,27,11,0,0,4,0, Type, "Enemy");
+Entity W4(70,20,19,3,8,0,3,0, Type, "Enemy");
+Entity W3(40,15,13,3,5,0,2,0, Type, "Enemy");
+Entity W2(24,10,8,3,2,0,1,0, Type, "Enemy");
+Entity W1(16,5,4,3,0,0,0,0, Type, "Enemy");
+
+    float AttackScale = 0.5;
+    int AttackScaleMult = 1;
+
+    float ACScale = 0.25;
+    int ACScaleMult = 1;
+
     switch (Floor){
         case 3:
+        enemy = F3;
+        AttackScaleMult = 4;
+        ACScaleMult = 4;
         break;
 
         case 2:
+        enemy = F2;
+        AttackScaleMult = 3;
+        ACScaleMult = 4;
         break;
 
         case 1:
+        enemy = F1;
+        AttackScaleMult = 3;
+        ACScaleMult = 3;
         break;
         
         case 0:
-            // switch (Wave){
-            //     case 6:
-            //     Entity W6(9,5,4,3,0,0,0,0, ENEMY, "Enemy");
-            //     break;
+            switch (Wave){
+                case 6:
+                enemy = W6;
+                break;
 
-            //     case 5:
-            //     Entity W5(80,5,4,3,0,0,0,0, ENEMY, "Enemy");
-            //     break;
+                case 5:
+                enemy = W5;
+                AttackScaleMult = 4;
+                ACScaleMult = 4;
+                break;
 
-            //     case 4:
-            //     Entity W4(50,5,4,3,0,0,0,0, ENEMY, "Enemy");
-            //     break;
+                case 4:
+                enemy = W4;
+                AttackScaleMult = 3;
+                ACScaleMult = 4;
+                break;
 
-            //     case 3:
-            //     Entity W3(28,5,4,3,0,0,0,0, ENEMY, "Enemy");
-            //     break;
+                case 3:
+                enemy = W3;
+                AttackScaleMult = 2;
+                ACScaleMult = 3;
+                break;
 
-            //     case 2:
-            //     Entity W2(16,5,4,3,0,0,0,0, ENEMY, "Enemy");
-            //     break;
+                case 2:
+                enemy = W2;
+                AttackScaleMult = 2;
+                ACScaleMult = 2;
+                break;
 
-            //     case 1:
-            //     Entity W1(10,5,4,3,0,0,0,0, ENEMY, "Enemy");
-            //     break;
-            // }
+                case 1:
+                enemy = W1;
+                break;
+            }
         break;
     }
 
     switch (WaveRound){
         case 1:
+        enemy.Stat.MAXHP *= 1;
+        enemy.Stat.ATK += (AttackScale * WaveRound) * AttackScaleMult;
+        enemy.Stat.AC += (ACScale * WaveRound) * ACScaleMult;
         break;
         case 2:
+        enemy.Stat.MAXHP *= 1.20;
+        enemy.Stat.ATK += (AttackScale * WaveRound) * AttackScaleMult;
+        enemy.Stat.AC += (ACScale * WaveRound) * ACScaleMult;
         break;
         case 3:
+        enemy.Stat.MAXHP *= 1.40;
+        enemy.Stat.ATK += (AttackScale * WaveRound) * AttackScaleMult;
+        enemy.Stat.AC += (ACScale * WaveRound) * ACScaleMult;
         break;
         case 4:
+        enemy.Stat.MAXHP *= 1.60;
+        enemy.Stat.ATK += (AttackScale * WaveRound) * AttackScaleMult;
+        enemy.Stat.AC += (ACScale * WaveRound) * ACScaleMult;
         break;
         case 5:
+        enemy.Stat.MAXHP *= 2;
+        enemy.Stat.ATK += (AttackScale * WaveRound) * AttackScaleMult * 1.25;
+        enemy.Stat.AC += (ACScale * WaveRound) * ACScaleMult * 1.25;
+        enemy.Stat.CRIT = 5;
         break;
     }
+
+    enemy.Stat.HP = enemy.Stat.MAXHP;
 }
 
 //- Battle Turns and Battles - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
@@ -3611,7 +3667,7 @@ void CellRest(Entity& Player){
 
 void CellTimeUI(int floor, int wave){
     if (floor == 0){
-        if (wave >= 3){
+        if (wave > 3){
             cout << "\033[90m|----|----|----|----|----|----|----|----|----|----|----|----|----+----+----+----+----+----+----|\033[0m" << endl;
             cout << "\033[90m     |    |    |    |    |    |    |    |\033[1;37m  - -CELL- -\033[0;90m  |    |    | \033[1;37m 4 -> Stats \033[0;90m |\033[1;37m 5 -> Options  " << endl;
             cout << "\033[0;90m|----|----|----|----|----|----|----|----|----|----|----|----|----+----+----+----+----+----+----|" << endl;
@@ -3705,7 +3761,7 @@ void CellTime(Entity& Player){
 
         switch (Action){
             case 0:
-            if (Wave >= 4){
+            if (Wave > 3){
                 Floor++;
                 validchoice = true;
             }else{
@@ -3780,7 +3836,7 @@ void ClassMenuUI(){
     cout << "||\033[1;92mItem\033[0m: Flurry Coat      ||  ||\033[1;92mItem\033[0m: Cursed Dice      ||  ||\033[1;92mItem\033[0m: Explosive Jar    ||  ||\033[1;92mItem\033[0m: Voodoo Doll      ||" << endl;
     cout << "||\033[1;94mSpell\033[0m: Duo Slash       ||  ||\033[1;94mSpell\033[0m: Magica Blast    ||  ||\033[1;94mSpell\033[0m: Tempered Cut    ||  ||\033[1;94mSpell\033[0m: Knight's Stance ||" << endl;
     cout << "||                       ||  ||                       ||  ||                       ||  ||                       ||" << endl;
-    cout << "||\033[1;93mAbility\033[0m: Gain +10% XP  ||  ||\033[1;93mAbility\033[0m: Gain more Mana||  ||\033[1;93mAbility\033[0m:+50% CritDamage||  ||\033[1;93mAbility\033[0m: Gain +10% Gold||" << endl;
+    cout << "||\033[1;93mBoon\033[0m: Earn +10% XP     ||  ||\033[1;93mBoon\033[0m: Restore more Mana||  ||\033[1;93mBoon\033[0m: +50% CritDamage  ||  ||\033[1;93mBoon\033[0m: Gain +10% Gold   ||" << endl;
     cout << "||\033[1;95mCurse\033[0m: None            ||  ||\033[1;95mCurse\033[0m: Gain -10% XP    ||  ||\033[1;95mCurse\033[0m: -1 Spell Token  ||  ||\033[1;95mCurse\033[0m: No Defend Mana  ||" << endl;
     cout << "\\'-----------------------'/  \\'-----------------------'/  \\'-----------------------'/  \\'-----------------------'/" << endl;
     cout << " '-----------------------'    '-----------------------'    '-----------------------'    '-----------------------' " << endl;
