@@ -42,7 +42,8 @@ enum ItemID{
     CoinBag = 23,
     VoodooDo = 24,
     PrecNeedle = 25,
-    Armagedon = 26
+    Armagedon = 26,
+    Tonic = 27,
 };
 enum SpellID{
     NOSPELL = 0,
@@ -102,7 +103,8 @@ enum UpgradeID{
     FULLHEAL = 7,
     TEMPERBAD = 8,
     LUCKYCLOVER = 9,
-    ETHEREAL = 10
+    ETHEREAL = 10,
+    STOKEN = 11
 };
 
 class Item {
@@ -157,23 +159,19 @@ class Relic{
         bool P2 = false;
     }Obtained;
 
-    struct TextImage{
-        string Line1;
-        string Line2;
-        string Line3;
-        string Line4;
-        string Line5;
-    }Image;
+
+    string Lines[5];
+
 
     Relic(RelicID id, string name, string desc, string line1, string line2, string line3, string line4, string line5){
         ID = id;
         Name = name;
         Desc = desc;
-        Image.Line1 = line1;
-        Image.Line2 = line2;
-        Image.Line3 = line3;
-        Image.Line4 = line4;
-        Image.Line5 = line5;
+        Lines[0] = line1;
+        Lines[1] = line2;
+        Lines[2] = line3;
+        Lines[3] = line4;
+        Lines[4] = line5;
     }
     Relic() = default;
 };
@@ -232,16 +230,12 @@ class Entity {
         
     struct Miscelaneous {
         Classes Class = NOCLASS;
+        string Color = "";
         uint16_t Level = 1;
-        int Spellslots = 3;
+        int Spellslots = 2;
+        int Tokens = 3;
         uint16_t Itemslots = 3;
         uint32_t XPThreshold = 100;
-        float XPMult = 1;
-        float GoldMult = 1;
-        float ManaMult = 1;
-        float PriceMult = 1;
-        float DefMult = 2;
-        float DefMana = 0.15;
         int NameLenght;
         EntityType Type;
     }Misc;
@@ -251,7 +245,7 @@ class Entity {
         int MAXMANA, MANA;
         float ATK;
         float MA;
-        float AC, DEF;
+        float DEF, Block = DEF;
         float CRIT;
         float CRITMULT = 2;
         float DODGE;
@@ -259,6 +253,17 @@ class Entity {
         int XP = 0;
         int Kindness = 0;
     }Stat;
+
+    struct Multipliers {
+    float XPMult = 1;
+    float GoldMult = 1;
+    float ManaMult = 0.10;
+    float PriceMult = 1;
+    float DefMult = 2;
+    float ATKMult = 1;
+    float MAGICMult = 1;
+    float ACMult = 1;
+    }Multiplier;
         
     struct Status{
         int16_t Burn = 0;
@@ -286,15 +291,15 @@ class Entity {
         Spell Spell6;
     }SpellBag;
         
-    Entity (int maxhp, int maxmana, float atk, float ma, float ac, float crit, float dodge, int gold, EntityType type, string name){
+    Entity (int maxhp, int maxmana, float atk, float ma, float def, float crit, float dodge, int gold, EntityType type, string name){
         Stat.MAXHP = maxhp;
         Stat.HP = maxhp;
         Stat.MAXMANA = maxmana;
         Stat.MANA = maxmana;
         Stat.ATK = atk;
         Stat.MA = ma;
-        Stat.AC = ac;
-        Stat.DEF = ac / 2;
+        Stat.DEF = def;
+        Stat.Block = def;
         Stat.CRIT = crit;
         Stat.DODGE = dodge;
         Stat.Gold = gold;
@@ -310,13 +315,21 @@ class Entity {
 enum Portrait {
     Nochar,
     Hero,
+    Hero_halfChamp,
+    Hero_Champ,
     Witch,
     Witch_down,
+    Witch_fierce,
     Sogro_prison,
     Prisoner,
     Prisoner_Free,
+    Fallen,
     Addison,
+    Addison_dead,
+    Addison_power,
     Aiden,
+    Aiden_dead,
+    Aiden_power,
     Nora,
     Champion,
     Starwalker,
@@ -409,7 +422,7 @@ void PlayerPortraits(Entity& Player, DialogueC& Cside){
        Cside.PortraitLine[10] = "           __..'   :\033[1;90m\\______|\033[1;91m.     ''-_  \033[37m";
        Cside.PortraitLine[11] = "       _-''   .-  '      '\033[1;91m_.'  _.---.._\\\033[37m";
        Cside.PortraitLine[12] = "      ' :'   '      '.'\033[1;91m_-' _.''   \033[37m \\    ";
-       Cside.PortraitLine[13] = "     |  .'   .    \033[1;91m  _-'  .'   \033[37m |   |    ";
+       Cside.PortraitLine[13] = "     |  .'   .    \033[1;91m  _-'  .'   \033[37m |    |   ";
        Cside.PortraitLine[14] = "     |       .'\033[1;91m _.-'   .'     \033[37m |    |   ";
        Cside.PortraitLine[15] = "    |    .   |\033[1;91m-'     .'     * \033[37m /    |   ";
         break;
@@ -431,6 +444,25 @@ void PlayerPortraits(Entity& Player, DialogueC& Cside){
        Cside.PortraitLine[13] = "\033[1;91m      |       /\033[1;90m.' \033[1;90m  ___|__\033[1;90m '.\033[1;91m|    |     ";
        Cside.PortraitLine[14] = "\033[1;91m     |       |\033[1;90m'.  \033[1;90m     |  \033[1;90m ./\033[1;91m|    |     ";
        Cside.PortraitLine[15] = "\033[1;91m     |      | \033[1;90m|'. \033[1;90m     | \033[1;90m.'|  \033[1;91m|   |     ";
+        break;
+
+        case God:
+        Cside.PortraitLine[0] = "                \033[43m  \033[0m                      ";
+        Cside.PortraitLine[1] = "              \033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m                    ";
+        Cside.PortraitLine[2] = "              \033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m                    ";
+        Cside.PortraitLine[3] = "            \033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m                  ";
+        Cside.PortraitLine[4] = "                  \033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m                ";
+        Cside.PortraitLine[5] = "    \033[43m  \033[0m\033[43m  \033[0m\033[0m  \033[0m\033[47m  \033[0m\033[47m  \033[0m                          ";
+        Cside.PortraitLine[6] = "\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[0m  \033[0m\033[47m  \033[0m\033[47m  \033[0m\033[47m  \033[0m\033[0m  \033[0m\033[47m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[47m  \033[0m            ";
+        Cside.PortraitLine[7] = "    \033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[43m  \033[0m\033[0m  \033[0m\033[47m  \033[0m\033[47m  \033[0m\033[47m  \033[0m\033[0m  \033[0m\033[43m  \033[0m        ";
+        Cside.PortraitLine[8] = "        \033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m    ";
+        Cside.PortraitLine[9] = "          \033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m";
+       Cside.PortraitLine[10] = "            \033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m    ";
+       Cside.PortraitLine[11] = "            \033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[43m\033[0m  \033[0m\033[0m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m        ";
+       Cside.PortraitLine[12] = "          \033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m          ";
+       Cside.PortraitLine[13] = "          \033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[43m  \033[0m\033[43m  \033[0m            ";
+       Cside.PortraitLine[14] = "          \033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[43m  \033[0m\033[43m  \033[0m            ";
+       Cside.PortraitLine[15] = "        \033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[43m  \033[0m\033[43m  \033[0m              ";
         break;
 
         default:
@@ -524,6 +556,153 @@ void CharacterPortraits(DialogueC& Cside, Portrait character, Entity& Player){
        Cside.PortraitLine[15] = "\033[95m         '     .'   '.       '          \033[0m";
         break;
 
+        case Witch_fierce:
+        Cside.Ncolor = "\033[95m";
+        Cside.Name = "Witch";
+        Cside.PortraitLine[0] = "                 \033[95m  /\\ \033[1;96m    .'''.   .     \033[0m";
+        Cside.PortraitLine[1] = "\033[1;96m  .            \033[95m   / \\\\ \033[1;96m  :  :  '.       \033[0m";
+        Cside.PortraitLine[2] = "\033[1;96m      ...      \033[95m  /   \\' \033[1;96m  '. '''        \033[0m";
+        Cside.PortraitLine[3] = "\033[1;96m   .''   '.   \033[95m  /     \\  \033[1;96m :  '.   ..    \033[0m";
+        Cside.PortraitLine[4] = "\033[1;96m   : .'.   : \033[95m  /       \\\033[1;96m.'  .'   '. :   \033[0m";
+        Cside.PortraitLine[5] = "\033[1;96m    '  ' .'  \033[95m /         \\..'.. \033[1;96m .' .'   \033[0m";
+        Cside.PortraitLine[6] = "\033[1;96m    .'' :\033[95m .../           \\    '''''--.  \033[0m";
+        Cside.PortraitLine[7] = "\033[95m .----''''  /  \033[93m [] \033[95m            ..-'''   \033[0m";
+        Cside.PortraitLine[8] = "\033[1;96m  :\033[95m''--..       \033[1;96m   |    \033[95m ..- ''   \033[1;96m   .  \033[0m";
+        Cside.PortraitLine[9] = "\033[1;96m :   .'  \033[95m'--..____\033[1;96m.'.\033[95m--''\033[0m  |\033[1;96m .'''-.     \033[0m";
+       Cside.PortraitLine[10] = "\033[1;96m '.   '..\033[0m | :  \033[1;96m--- \033[1;95m*\033[1;96m --- \033[0m  |\033[1;96m: :  '  :   \033[0m";
+       Cside.PortraitLine[11] = "\033[1;96m.  '     '\033[0m| :'' \033[1;96m _'.' \033[0m.|   |\033[1;96m.'  '  .    \033[0m";
+       Cside.PortraitLine[12] = "\033[1;96m :'.:    \033[0m |  '..\033[1;96m/ \\|\033[0m-' |  .'\033[95m.  \033[1;96m :.' :   \033[0m";
+       Cside.PortraitLine[13] = " \033[1;96m '.   \033[0m   |\033[1;95m.''-.\033[1;96m\\_/\033[95m.-''\033[0m|-'  \033[95m : \033[1;96m    .'   \033[0m";
+       Cside.PortraitLine[14] = " \033[1;96m   :  \033[95m   :     .--.         :  \033[1;96m  '.    \033[0m";
+       Cside.PortraitLine[15] = " \033[1;96m .'  \033[95m   '     .'   '.       '  \033[1;96m    '.. \033[0m";
+        break;
+
+        case Aiden:
+        Cside.Ncolor = "\033[1;93m";
+        Cside.Name = "King Aiden";
+        Cside.PortraitLine[0] = "                                        ";
+        Cside.PortraitLine[1] = "                                        ";
+        Cside.PortraitLine[2] = "               \033[1;93m|\\/\\/|                   \033[0m";
+        Cside.PortraitLine[3] = "             .-\033[1;93m|____|\033[0m..                 ";
+        Cside.PortraitLine[4] = "          \033[1;93m >\033[0m: \033[1;93m   .     \033[0m'.               ";
+        Cside.PortraitLine[5] = "           :.''-  \033[1;93m''>-_  \033[0m:              ";
+        Cside.PortraitLine[6] = "           ::   '.-.  \033[1;93m-''>.             \033[0m";
+        Cside.PortraitLine[7] = "           '|\033[1;93m 0   0\033[0m '-.  :              ";
+        Cside.PortraitLine[8] = "            |  /       : :              ";
+        Cside.PortraitLine[9] = "             |         : :              ";
+       Cside.PortraitLine[10] = "             |         ::'              ";
+       Cside.PortraitLine[11] = "              \\___..--'                 ";
+       Cside.PortraitLine[12] = "\033[91m             .-\033[0m|     |\033[91m''-..             \033[0m";
+       Cside.PortraitLine[13] = "\033[91m           .'  \033[0m|\033[1;93m\\_-_-/\033[91m|   ''-.          \033[0m";
+       Cside.PortraitLine[14] = "\033[91m         .''\033[1;93m.\033[91m'\033[1;93m.\033[91m\\ \033[1;93m ' ' \033[91m/\033[1;93m.\033[91m'\033[1;93m.\033[91m'\033[1;93m.\033[91m'\033[1;93m.\033[91m'.        \033[0m";
+       Cside.PortraitLine[15] = "\033[91m       .'\033[1;93m'.'.'.'\033[91m|\033[1;93m __ \033[91m|\033[1;93m'.'.'.'.'.\033[91m'.      \033[0m";
+        break;
+
+        case Aiden_power:
+        Cside.Ncolor = "\033[1;95m";
+        Cside.Name = "King Aiden";
+        Cside.PortraitLine[0] = "                                        ";
+        Cside.PortraitLine[1] = "                                        ";
+        Cside.PortraitLine[2] = "               \033[1;93m|\\/\\/|                   \033[0m";
+        Cside.PortraitLine[3] = "\033[1;95m             .-\033[1;93m|____|\033[1;95m..                 \033[0m";
+        Cside.PortraitLine[4] = "          \033[1;93m >\033[1;95m: \033[1;93m   .     \033[1;95m'.               \033[0m";
+        Cside.PortraitLine[5] = "\033[1;95m           :.''-  \033[1;93m''>-_  \033[1;95m:              \033[0m";
+        Cside.PortraitLine[6] = "\033[1;95m           :: \033[1;93m|\033[1;95m '.\033[1;93m|\033[1;95m.  \033[1;93m-''>.             \033[0m";
+        Cside.PortraitLine[7] = "\033[1;95m           '\033[0m\033[1;93m--\033[1;95m@\033[1;93m---\033[1;95m@\033[1;93m--\033[1;95m'.  :              ";
+        Cside.PortraitLine[8] = "            | \033[1;93m|   |    \033[1;95m: :              ";
+        Cside.PortraitLine[9] = "             |         \033[1;95m: :              ";
+       Cside.PortraitLine[10] = "             |         \033[1;95m::'              ";
+       Cside.PortraitLine[11] = "              \\___..--'                 ";
+       Cside.PortraitLine[12] = "\033[91m             .-\033[0m|     |\033[91m''-..             \033[0m";
+       Cside.PortraitLine[13] = "\033[91m           .'  \033[0m|\033[1;93m\\_-_-/\033[91m|   ''-.          \033[0m";
+       Cside.PortraitLine[14] = "\033[91m         .''\033[1;93m.\033[91m'\033[1;93m.\033[91m\\ \033[1;93m ' ' \033[91m/\033[1;93m.\033[91m'\033[1;93m.\033[91m'\033[1;93m.\033[91m'\033[1;93m.\033[91m'.        \033[0m";
+       Cside.PortraitLine[15] = "\033[91m       .'\033[1;93m'.'.'.'\033[91m|\033[1;93m __ \033[91m|\033[1;93m'.'.'.'.'.\033[91m'.      \033[0m";
+        break;
+
+        case Aiden_dead:
+        Cside.Ncolor = "\033[1;93m";
+        Cside.Name = "King Aiden";
+        Cside.PortraitLine[0] = "                                        ";
+        Cside.PortraitLine[1] = "                                        ";
+        Cside.PortraitLine[2] = "               \033[1;93m|\\/\\/|                   \033[0m";
+        Cside.PortraitLine[3] = "             .-\033[1;93m|____|\033[0m..                 ";
+        Cside.PortraitLine[4] = "          \033[1;93m >\033[0m: \033[1;93m   .     \033[0m'.               ";
+        Cside.PortraitLine[5] = "           :.''-  \033[1;93m''>-_  \033[0m:              ";
+        Cside.PortraitLine[6] = "           ::   '.-.  \033[1;93m-''>.             \033[0m";
+        Cside.PortraitLine[7] = "           '|\033[1;93m      \033[0m '-.  :              ";
+        Cside.PortraitLine[8] = "            |  /       : :              ";
+        Cside.PortraitLine[9] = "             |         : :              ";
+       Cside.PortraitLine[10] = "             |         ::'              ";
+       Cside.PortraitLine[11] = "              \\___..--'                 ";
+       Cside.PortraitLine[12] = "\033[91m             .-\033[0m|     |\033[91m''-..             \033[0m";
+       Cside.PortraitLine[13] = "\033[91m           .'  \033[0m|\033[1;93m\\_-_-/\033[91m|   ''-.          \033[0m";
+       Cside.PortraitLine[14] = "\033[91m         .''\033[1;93m.\033[91m'\033[1;93m.\033[91m\\ \033[1;93m ' ' \033[91m/\033[1;93m.\033[91m'\033[1;93m.\033[91m'\033[1;93m.\033[91m'\033[1;93m.\033[91m'.        \033[0m";
+       Cside.PortraitLine[15] = "\033[91m       .'\033[1;93m'.'.'.'\033[91m|\033[1;93m __ \033[91m|\033[1;93m'.'.'.'.'.\033[91m'.      \033[0m";
+        break;
+
+        case Addison:
+        Cside.Ncolor = "\033[1;93m";
+        Cside.Name = "King Addison";
+        Cside.PortraitLine[0] = "                                        ";
+        Cside.PortraitLine[1] = "                                        ";
+        Cside.PortraitLine[2] = "               \033[1;93m|\\/\\/|                   \033[0m";
+        Cside.PortraitLine[3] = "               \033[1;93m|____|\033[0m.                  ";
+        Cside.PortraitLine[4] = "           \033[1;93m>\033[0m.''       '.                ";
+        Cside.PortraitLine[5] = "           :  ..  \033[1;93m'->_ \033[0m :               ";
+        Cside.PortraitLine[6] = "           :.'_ ''_.  \033[1;93m''>-              \033[0m";
+        Cside.PortraitLine[7] = "           ::\033[1;m O   O \033[0m:.  :               ";
+        Cside.PortraitLine[8] = "           :|  /    ' : :               ";
+        Cside.PortraitLine[9] = "           '|         : :               ";
+       Cside.PortraitLine[10] = "             |      .' .'               ";
+       Cside.PortraitLine[11] = "             '-----' |'                 ";
+       Cside.PortraitLine[12] = "\033[91m              .\033[0m|\033[1;4;93m-----\033[0m|\033[91m''-.              \033[0m";
+       Cside.PortraitLine[13] = "\033[91m           .'' \033[91m\\     \033[91m/    ''-.          \033[0m";
+       Cside.PortraitLine[14] = "\033[91m         .'\033[1;93m-.-.-\033[91m|    \033[91m|\033[1;93m-.-.-.-.\033[91m'.        \033[0m";
+       Cside.PortraitLine[15] = "\033[91m       .'\033[1;93m.-.-.-.\033[91m|    \033[91m|\033[1;93m.-.-.-.-.-\033[91m'.      \033[0m";
+        break;
+
+        case Addison_power:
+        Cside.Ncolor = "\033[1;95m";
+        Cside.Name = "King Addison";
+        Cside.PortraitLine[0] = "                                        ";
+        Cside.PortraitLine[1] = "                                        ";
+        Cside.PortraitLine[2] = "               \033[1;93m|\\/\\/|                   \033[0m";
+        Cside.PortraitLine[3] = "               \033[1;93m|____|\033[1;95m.                  \033[0m";
+        Cside.PortraitLine[4] = "           \033[1;93m>\033[1;95m.''       '.               \033[0m ";
+        Cside.PortraitLine[5] = "          \033[1;95m :  .. \033[1;93m '->_  \033[1;95m:               \033[0m";
+        Cside.PortraitLine[6] = "\033[1;95m           :.'\033[1;93m|\033[1;95m ''\033[1;93m|\033[1;95m.  \033[1;93m''>-              \033[0m";
+        Cside.PortraitLine[7] = "\033[1;95m           :\033[1;93m--\033[1;95m@\033[1;93m---\033[1;95m@\033[1;93m--\033[1;95m.  :               ";
+        Cside.PortraitLine[8] = "\033[1;95m           :\033[0m|\033[1;93m |   | \033[1;95m' : :               ";
+        Cside.PortraitLine[9] = "\033[1;95m           '\033[0m|         \033[1;95m: :               ";
+       Cside.PortraitLine[10] = "             |      .' \033[1;95m.'               ";
+       Cside.PortraitLine[11] = "             '-----' |\033[1;95m'                 ";
+       Cside.PortraitLine[12] = "\033[91m              .\033[0m|\033[1;4;93m-----\033[0m|\033[91m''-.              \033[0m";
+       Cside.PortraitLine[13] = "\033[91m           .'' \033[91m\\     \033[91m/    ''-.          \033[0m";
+       Cside.PortraitLine[14] = "\033[91m         .'\033[1;93m-.-.-\033[91m|    \033[91m|\033[1;93m-.-.-.-.\033[91m'.        \033[0m";
+       Cside.PortraitLine[15] = "\033[91m       .'\033[1;93m.-.-.-.\033[91m|    \033[91m|\033[1;93m.-.-.-.-.-\033[91m'.      \033[0m";
+        break;
+
+        case Addison_dead:
+        Cside.Ncolor = "\033[1;93m";
+        Cside.Name = "King Addison";
+        Cside.PortraitLine[0] = "                                        ";
+        Cside.PortraitLine[1] = "                                        ";
+        Cside.PortraitLine[2] = "               \033[1;93m|\\/\\/|                   \033[0m";
+        Cside.PortraitLine[3] = "               \033[1;93m|____|\033[0m.                  ";
+        Cside.PortraitLine[4] = "           \033[1;93m>\033[0m.''       '.                ";
+        Cside.PortraitLine[5] = "           :  ..  \033[1;93m'->_ \033[0m :               ";
+        Cside.PortraitLine[6] = "           :.'  ''-.  \033[1;93m''>-              \033[0m";
+        Cside.PortraitLine[7] = "           ::\033[1;m       \033[0m:.  :               ";
+        Cside.PortraitLine[8] = "           :|  /    ' : :               ";
+        Cside.PortraitLine[9] = "           '|         : :               ";
+       Cside.PortraitLine[10] = "             |      .' .'               ";
+       Cside.PortraitLine[11] = "             '-----' |'                 ";
+       Cside.PortraitLine[12] = "\033[91m              .\033[0m|\033[1;4;93m-----\033[0m|\033[91m''-.              \033[0m";
+       Cside.PortraitLine[13] = "\033[91m           .'' \033[91m\\     \033[91m/    ''-.          \033[0m";
+       Cside.PortraitLine[14] = "\033[91m         .'\033[1;93m-.-.-\033[91m|    \033[91m|\033[1;93m-.-.-.-.\033[91m'.        \033[0m";
+       Cside.PortraitLine[15] = "\033[91m       .'\033[1;93m.-.-.-.\033[91m|    \033[91m|\033[1;93m.-.-.-.-.-\033[91m'.      \033[0m";
+        break;
+
         case Prisoner:
         Cside.Ncolor = "\033[1;90m";
         Cside.Name = "Prisoner";
@@ -587,6 +766,27 @@ void CharacterPortraits(DialogueC& Cside, Portrait character, Entity& Player){
        Cside.PortraitLine[15] = "\033[90m       '                         '      \033[0m";
         break;
 
+        case Fallen:
+        Cside.Ncolor = "\033[95m";
+        Cside.Name = "Fallen";
+        Cside.PortraitLine[0] = "                                        ";
+        Cside.PortraitLine[1] = "                                        ";
+        Cside.PortraitLine[2] = "                                        ";
+        Cside.PortraitLine[3] = "                                        ";
+        Cside.PortraitLine[4] = "              .-'''''-.                 ";
+        Cside.PortraitLine[5] = "             / \033[91m:       \033[0m\\                ";
+        Cside.PortraitLine[6] = "            | \033[91m:     .   \033[0m|               ";
+        Cside.PortraitLine[7] = "           |       \033[91m  :  \033[0m|               ";
+        Cside.PortraitLine[8] = "           |  _   _ \033[91m  '.\033[0m|               ";
+        Cside.PortraitLine[9] = "            |       \033[91m   :                \033[0m";
+       Cside.PortraitLine[10] = "             |    \033[91m .' :                 \033[0m";
+       Cside.PortraitLine[11] = "              \\______/|                 \033[0m";
+       Cside.PortraitLine[12] = "\033[90m              .\033[0m|  \033[91m ' : \033[90m'-..             \033[0m";
+       Cside.PortraitLine[13] = "\033[90m         .--'' '.. \033[91m . ' \033[90m.'''''-.        \033[0m";
+       Cside.PortraitLine[14] = "\033[90m       .'         '' : :        '.      \033[0m";
+       Cside.PortraitLine[15] = "\033[90m       '       \033[91m:'.    :.       .\033[90m '    \033[0m  ";
+        break;
+
         case Champion:
         Cside.Ncolor = "\033[1;95m";
         Cside.Name = "CHAMPION";
@@ -618,8 +818,8 @@ void CharacterPortraits(DialogueC& Cside, Portrait character, Entity& Player){
         Cside.PortraitLine[4] = "\033[90m              /           \\             ";
         Cside.PortraitLine[5] = "\033[90m             /      _      \\            ";
         Cside.PortraitLine[6] = "\033[90m            |    .-' \\      |           ";
-        Cside.PortraitLine[7] = "\033[90m            | .-'     |     |           ";
-        Cside.PortraitLine[8] = "\033[90m            | |       \\     |           ";
+        Cside.PortraitLine[7] = "\033[90m            |   :     |     |           ";
+        Cside.PortraitLine[8] = "\033[90m            | .'      \\     |           ";
         Cside.PortraitLine[9] = "\033[90m            | |        |     \\          ";
        Cside.PortraitLine[10] = "\033[90m            |  \\_      \\      |         ";
        Cside.PortraitLine[11] = "\033[90m             \\   |     |      |         ";
@@ -648,6 +848,48 @@ void CharacterPortraits(DialogueC& Cside, Portrait character, Entity& Player){
        Cside.PortraitLine[13] = "          \033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[43m  \033[0m\033[43m  \033[0m";
        Cside.PortraitLine[14] = "          \033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[43m  \033[0m\033[43m  \033[0m";
        Cside.PortraitLine[15] = "        \033[43m  \033[0m\033[43m  \033[0m\033[43m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[0m  \033[0m\033[43m  \033[0m\033[43m  \033[0m";
+        break;
+
+        case Hero_halfChamp:
+        Cside.Ncolor = "";
+        Cside.Name =  Player.Name;
+        Cside.PortraitLine[0] = "                                        ";
+        Cside.PortraitLine[1] = "               _______                  ";
+        Cside.PortraitLine[2] = "             .'       '.                ";
+        Cside.PortraitLine[3] = "            /  .'       \\               ";
+        Cside.PortraitLine[4] = "           :             :              ";
+        Cside.PortraitLine[5] = "           :     .    .  :              ";
+        Cside.PortraitLine[6] = "           :    -+-  -+- :              ";
+        Cside.PortraitLine[7] = "            \\    '    '  :              ";
+        Cside.PortraitLine[8] = "             \\ :         :              ";
+        Cside.PortraitLine[9] = "           .-': '       /.              ";
+       Cside.PortraitLine[10] = "        .-'      '.____/  ''--.         ";
+       Cside.PortraitLine[11] = "      .:     :            :    '.       ";
+       Cside.PortraitLine[12] = "     .:       :         .'      :.      ";
+       Cside.PortraitLine[13] = "     :  .   '. '.       :    .   :      ";
+       Cside.PortraitLine[14] = "    :  :      :               :   :     ";
+       Cside.PortraitLine[15] = "   :  :       :     .          :   :    ";
+        break;
+
+        case Hero_Champ:
+        Cside.Ncolor = "";
+        Cside.Name =  Player.Name;
+        Cside.PortraitLine[0] = "               ..--'''-.                ";
+        Cside.PortraitLine[1] = "             .' .' : '. '               ";
+        Cside.PortraitLine[2] = "            :     '     //                ";
+        Cside.PortraitLine[3] = "           :     .     // .             ";
+        Cside.PortraitLine[4] = "           :    . ':  ||  :             ";
+        Cside.PortraitLine[5] = "           :     '====||==='            ";
+        Cside.PortraitLine[6] = "           '. :    '  ||  :             ";
+        Cside.PortraitLine[7] = "            : :      //  .'             ";
+        Cside.PortraitLine[8] = "            .' '.   //    ''.           ";
+        Cside.PortraitLine[9] = "         .-'     :     .     '-.        ";
+       Cside.PortraitLine[10] = "       .:   :    :    '   :    '.       ";
+       Cside.PortraitLine[11] = "      :   .'      '      :      :.      ";
+       Cside.PortraitLine[12] = "     .:   :             '.  '.   :.     ";
+       Cside.PortraitLine[13] = "     :           :       :    :   :     ";
+       Cside.PortraitLine[14] = "    :  .     :    :            :   :    ";
+       Cside.PortraitLine[15] = "                                        ";
         break;
 
         default:
@@ -1088,6 +1330,84 @@ void DialogueWhite(Entity& Player, Portrait LeftCharacter, Portrait RightCharact
     clear();
 }
 
+
+void DialogueColored(Entity& Player, Portrait LeftCharacter, Portrait RightCharacter, bool LeftTalk, string TextLine1, string TextLine2, string TextLine3, int automiliseconds, string bgcolor){//Only works on right character talk
+    clear();
+    CharacterL.Ncolor = "\033[0m";
+    CharacterR.Ncolor = "\033[0m";
+    CharacterPortraits(CharacterL, LeftCharacter, Player);
+    CharacterPortraits(CharacterR, RightCharacter, Player);
+    
+    if (LeftTalk == true){
+        cout << bgcolor;
+        cout << bgcolor << "\t  "   <<  CharacterL.PortraitLine[0]   << bgcolor << "               " <<       CharacterR.PortraitLine[0]     << endl;
+        cout << bgcolor << "\t  "   <<  CharacterL.PortraitLine[1]   << bgcolor << "               " <<       CharacterR.PortraitLine[1]     << endl;
+        cout << bgcolor << "\t  "   <<  CharacterL.PortraitLine[2]   << bgcolor << "               " <<       CharacterR.PortraitLine[2]     << endl;
+        cout << bgcolor << "\t  "   <<  CharacterL.PortraitLine[3]   << bgcolor << "               " <<       CharacterR.PortraitLine[3]     << endl;
+        cout << bgcolor << "\t  "   <<  CharacterL.PortraitLine[4]   << bgcolor << "               " <<       CharacterR.PortraitLine[4]     << endl;
+        cout << bgcolor << "\t  "   <<  CharacterL.PortraitLine[5]   << bgcolor << "               " <<       CharacterR.PortraitLine[5]     << endl;
+        cout << bgcolor << "\t  "   <<  CharacterL.PortraitLine[6]   << bgcolor << "               " <<       CharacterR.PortraitLine[6]     << endl;
+        cout << bgcolor << "\t  "   <<  CharacterL.PortraitLine[7]   << bgcolor << "               " <<       CharacterR.PortraitLine[7]     << endl;
+        cout << bgcolor << "\t  "   <<  CharacterL.PortraitLine[8]   << bgcolor << "               " <<       CharacterR.PortraitLine[8]     << endl;
+        cout << bgcolor << "\t  "   <<  CharacterL.PortraitLine[9]   << bgcolor << "               " <<       CharacterR.PortraitLine[9]     << endl;
+        cout << bgcolor << "\t  "   << CharacterL.PortraitLine[10]   << bgcolor << "               " <<      CharacterR.PortraitLine[10]     << endl;
+        cout << bgcolor << "\t  "   << CharacterL.PortraitLine[11]   << bgcolor << "               " <<      CharacterR.PortraitLine[11]     << endl;
+        cout << bgcolor << "\t  "   << CharacterL.PortraitLine[12]   << bgcolor << "               " <<      CharacterR.PortraitLine[12]     << endl;
+        cout << bgcolor << "\t  "   << CharacterL.PortraitLine[13]   << bgcolor << "               " <<      CharacterR.PortraitLine[13]     << endl;
+        cout << bgcolor << "\t  "   << CharacterL.PortraitLine[14]   << bgcolor << "               " <<      CharacterR.PortraitLine[14]     << endl << "\033[1;90m";
+        cout << bgcolor << "\t             .-'-.-'-.-'-.-'-.                           "<< bgcolor<<CharacterR.PortraitLine[15]     << endl << "\033[1;90m";
+        cout << bgcolor << "\t #-.-'-.-'-.-:"<<CharacterL.Ncolor<<bgcolor<<CharName(CharacterL.Name)<<bgcolor<<"\033[1;90m:-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-#\033[1;90m" << endl;
+        cout << bgcolor << "\t             '-.-'-.-'-.-'-.-'" << bgcolor << "\n"<<bgcolor<<"\n";
+
+        cout << bgcolor<<"\t       " << TextLine1 << bgcolor << "\n\n";
+
+        cout << bgcolor<<"\t       " << TextLine2 << bgcolor << "\n\n";
+
+        cout << bgcolor<<"\t       " << TextLine3 << bgcolor << "\033[1;90m" << "\n\n";
+
+        cout << bgcolor<<"\t #-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-#\033[0m" << bgcolor << "\n\n";
+
+    }else{
+        cout << "\033[47m";
+        cout << "\033[47m\t  "   <<  CharacterL.PortraitLine[0]  << "\033[47m               " <<       CharacterR.PortraitLine[0]     << endl;
+        cout << "\033[47m\t  "   <<  CharacterL.PortraitLine[1]  << "\033[47m               " <<       CharacterR.PortraitLine[1]     << endl;
+        cout << "\033[47m\t  "   <<  CharacterL.PortraitLine[2]  << "\033[47m               " <<       CharacterR.PortraitLine[2]     << endl;
+        cout << "\033[47m\t  "   <<  CharacterL.PortraitLine[3]  << "\033[47m               " <<       CharacterR.PortraitLine[3]     << endl;
+        cout << "\033[47m\t  "   <<  CharacterL.PortraitLine[4]  << "\033[47m               " <<       CharacterR.PortraitLine[4]     << endl;
+        cout << "\033[47m\t  "   <<  CharacterL.PortraitLine[5]  << "\033[47m               " <<       CharacterR.PortraitLine[5]     << endl;
+        cout << "\033[47m\t  "   <<  CharacterL.PortraitLine[6]  << "\033[47m               " <<       CharacterR.PortraitLine[6]     << endl;
+        cout << "\033[47m\t  "   <<  CharacterL.PortraitLine[7]  << "\033[47m               " <<       CharacterR.PortraitLine[7]     << endl;
+        cout << "\033[47m\t  "   <<  CharacterL.PortraitLine[8]  << "\033[47m               " <<       CharacterR.PortraitLine[8]     << endl;
+        cout << "\033[47m\t  "   <<  CharacterL.PortraitLine[9]  << "\033[47m               " <<       CharacterR.PortraitLine[9]     << endl;
+        cout << "\033[47m\t  "   << CharacterL.PortraitLine[10]  << "\033[47m               " <<      CharacterR.PortraitLine[10]     << endl;
+        cout << "\033[47m\t  "   << CharacterL.PortraitLine[11]  << "\033[47m               " <<      CharacterR.PortraitLine[11]     << endl;
+        cout << "\033[47m\t  "   << CharacterL.PortraitLine[12]  << "\033[47m               " <<      CharacterR.PortraitLine[12]     << endl;
+        cout << "\033[47m\t  "   << CharacterL.PortraitLine[13]  << "\033[47m               " <<      CharacterR.PortraitLine[13]     << endl;
+        cout << "\033[47m\t  "   << CharacterL.PortraitLine[14]  << "\033[47m               " <<      CharacterR.PortraitLine[14]     << endl;
+        cout << "\033[47m\t  "   << CharacterL.PortraitLine[15]<<"\033[1;90;47m                   .-'-.-'-.-'-.-'-." << endl;
+        cout << "\033[47m\t #-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-:"<<CharacterR.Ncolor<<"\033[47m"<<CharName(CharacterR.Name)<<"\033[1;90;47m:-.-'-.-'-.-'-.-'-.-#\033[1;90;47m" << endl;
+        cout << "\033[47m\t                                                             '-.-'-.-'-.-'-.-'\033[0;47m" << "\n\n";
+
+        cout << "\033[47m\t       " << TextLine1 << "\n\n";
+
+        cout << "\033[47m\t       " << TextLine2 << "\n\n";
+
+        cout << "\033[47m\t       " << TextLine3 << "\n\n \033[1;90;47m";
+
+        cout << "\033[47m\t #-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-#\033[0;47m" << "\n\n";
+
+    }
+
+    if (automiliseconds <= 0){
+    EnterShort();
+    }else{
+        usleep(automiliseconds);
+    }
+
+    clear();
+}
+
+
 string DramaticLine(string text, string color, int slowness){
     usleep(slowness*1.5);
 
@@ -1175,6 +1495,55 @@ void DialogueDramatic(Entity& Player, Portrait LeftCharacter, Portrait RightChar
 
 // - -DIALOGUE EVENTS- - - (DE = Dialog Event) (EE = Easter Egg) - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -||
 
+void DE_KingsBattleBegin(Entity Player){
+    string ClassMention;
+    switch (Player.Misc.Class){
+        case Gladiator:
+        ClassMention = "GLADIATOR";
+        break;
+        case Wanderer:
+        ClassMention = "WANDERER";
+        break;
+        case Berserker:
+        ClassMention = "BERSERKER";
+        break;
+        case BlackKnight:
+        ClassMention = "BLACK KNIGHT";
+        break;
+        default:
+        ClassMention = "SCOUNDREL";
+        break;
+    }
+
+    Dialogue(Player,Hero,Aiden,false,"DO YOU REALLY THINK WE'LL LET YOU LEAVE AFTER THIS THREAT AND WITH THE TONIC?!","THAT WE'LL LET YOU LEAVE UNPUNISHED?!","",0);
+    Dialogue(Player,Aiden,Addison,false,"Brother...","We needn't start another fight-","",0);
+    Dialogue(Player,Aiden,Addison,true,"SHUT UP ADDISON","DRINK SOME OF IT","",0);
+    Dialogue(Player,Hero,Aiden,true,"\033[90m(Aiden takes a sip from the \033[95mViolet Tonic\033[90m and hands it to Addison, who drinks aswell)\033[0m","","",0);
+    Dialogue(Player,Hero,Addison,false,"Tastes bad...","Feels bad...","I don't want to do this...",0);
+    Dialogue(Player,Hero,Aiden,false,"AHAHAHAHAHAAHAAHAHAHHAHAHAHAHAHHAHAHHAHAHAHAHAHHAAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHHAAAHAHAH","FEELS BAD?! THIS IS POWER!","",0);
+    DialogueDramatic(Player,Hero,Aiden,false,"DIE " + ClassMention + ", DIE!!!","\033[1;93m","","",100000,1000000);
+
+    KingsIncomingUI();
+}
+void DE_KingsBattleAidenDeath(Entity Player){
+    Dialogue(Player,Hero,Addison,false,"Brother...","Brother please wake up","...",0);
+    Dialogue(Player,Aiden_dead,Addison,true,"","","",0);
+    Dialogue(Player,Aiden_dead,Addison,false,"... I see","Just do what he told you Addison, just do it, ","\"If I die, drink the rest of the Tonic\"...",0);
+    Dialogue(Player,Hero,Addison,true,"\033[90m(Addison drinks the rest of the \033[95mViolet Tonic\033[90m hesitantly, not leaving a single drop left)\033[0m","","",0);
+    Dialogue(Player,Hero,Addison,false,"I'm afraid Brother...","But I'll do this","I'll do this for you",0);
+    DialogueDramatic(Player,Hero,Addison_power,false,"I will AVENGE YOU","\033[1;93m","","",120000,1000000);
+    KingAddisonIncomingUI();
+}
+void DE_KingsBattleAddisonDeath(Entity Player){
+    Dialogue(Player,Hero,Aiden,false,"ADDISON!?","ADDISON TALK TO ME","",0);
+    Dialogue(Player,Addison_dead,Aiden,true,"","","",0);
+    Dialogue(Player,Addison_dead,Aiden,false,"oh my god","you are FUCKING USELESS","",0);
+    Dialogue(Player,Hero,Aiden,false,"FINE GOD DAMN IT","I'LL DO IT MYSELF","",0);
+    Dialogue(Player,Hero,Aiden,true,"\033[90m(Aiden drinks the rest of the \033[95mViolet Tonic\033[90m, not leaving a single drop left)\033[0m","","",0);
+    DialogueDramatic(Player,Hero,Aiden_power,false,"TO HELL WITH YOU","\033[1;93m","","",120000,1000000);
+    KingAidenIncomingUI();
+}
+
 void DE_ChampionBattleBegin(Entity Player){
     Dialogue(Player,Hero,Champion,false,"\033[1;95m","\t\t\t\t\t\t. . .","\033[0m",0);
     Dialogue(Player,Hero,Champion,false,"\033[1;95m","\t\t\t\t\t\tYou...","\033[0m",0);
@@ -1204,21 +1573,21 @@ void DE_ChampionBattleBegin(Entity Player){
     switch (Chance){
         case 1:
         Dialogue(Player,Hero,Champion,false,"\033[1;95m","Good","\033[0m",0);
-        DialogueDramatic(Player,Hero,Champion,false,"","","Then let the Battles begin","\033[1;95m",150000,1200000);
+        DialogueDramatic(Player,Hero,Champion,false,"","","Then let the Battles begin","\033[1;95m",100000,1200000);
         break;
 
         case 2:
        Dialogue(Player,Hero,Champion,false,"\033[1;95m","That's too bad, for you","\033[0m",0);
-       DialogueDramatic(Player,Hero,Champion,false,"","","Let the Battles begin","\033[1;95m",150000,1200000);
+       DialogueDramatic(Player,Hero,Champion,false,"","","Let the Battles begin","\033[1;95m",100000,1200000);
         break;
     }
 }
 void DE_ChampionBattleDefeated(Entity Player){
     DialogueDramatic(Player,Hero,Champion,false,"","",". . .","\033[1;95m",150000,0);
-    DialogueDramatic(Player,Hero,Champion,false,"","","What","\033[1;95m",120000,0);
-    DialogueDramatic(Player,Hero,Champion,false,"","","Impossible","\033[1;95m",120000,0);
-    DialogueDramatic(Player,Hero,Champion,false,"","","You can't...","\033[1;95m",120000,800000);
-    DialogueDramatic(Player,Hero,Champion,false,"","","You...","\033[1;95m",120000,700000);
+    DialogueDramatic(Player,Hero,Champion,false,"","","What","\033[1;95m",100000,0);
+    DialogueDramatic(Player,Hero,Champion,false,"","","Impossible","\033[1;95m",100000,0);
+    DialogueDramatic(Player,Hero,Champion,false,"","","You can't...","\033[1;95m",100000,800000);
+    DialogueDramatic(Player,Hero,Champion,false,"","","You...","\033[1;95m",120000,600000);
     DialogueDramatic(Player,Hero,Champion,false,"","","YOU","\033[1;95m",120000,300000);
     for (int l = 8; l > 0; l--){
         Dialogue(Player,Hero,Champion,false,"\033[1;95m","AAAAAAAAAEHHHHHHHHEHHHH","\033[0m",1);

@@ -16,12 +16,14 @@
 using namespace std;
 
    //- Battle Subjects -
-Entity Player1(50,40,150,5,2,20,5,9, PLAYER1, "Player1");
+Entity Player1(97,43,427,18,40,54.5,18.5,24, PLAYER1, "Player1");
 Entity Player2(50,15,10,5,2,5,5,9, PLAYER2, "Player2");
-Entity EnemyA(9,5,4,3,0,0,0,0, ENEMY, "Enemy");
-Entity BossA(30,10,6,6,4,5,5,0, BOSS, "Boss");
+Entity EnemyA(20,5,4,3,0,0,0,0, ENEMY, "Enemy");
+Entity BossA(30,5,6,6,4,5,5,0, BOSS, "Boss");
 
-Entity TheChampion(999,999,999,999,50,999,0,3309, CHAMPION, "\033[1;95mThe Champion\033[0m");
+Entity King_Aiden(500,80,55,40,30,10,5,9999,KING,"King Aiden");
+Entity King_Addison(500,80,40,40,40,5,10,9999,KING,"King Addison");
+Entity TheChampion(9999,999,999,999,0,999,0,3309, CHAMPION, "\033[1;95mThe Champion\033[0m");
 
 //- General Functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 
@@ -77,7 +79,7 @@ void EntityNameStringUI(Entity User, bool ShowMana, bool Box){
     if (Box == true){
         cout << "| ";
     }
-    cout << User.Name << ": " << User.Stat.HP << "/" << User.Stat.MAXHP << " \033[91mHP\033[0m";
+    cout << User.Misc.Color << User.Name << "\033[0m" << ": " << User.Stat.HP << "/" << User.Stat.MAXHP << " \033[91mHP\033[0m";
 
     if (ShowMana == true){
         cout << "   " << User.Stat.MANA << "/" << User.Stat.MAXMANA << " \033[94mMana\033[0m";
@@ -104,7 +106,7 @@ void EntityBoxUI(Entity User, bool ShowMana, bool Menu){
     cout << endl;
 }
 
-void HPMPspaceCheck(Entity Player){
+void HPMPspaceCheck(Entity Player, bool MP){
     if(Player.Stat.HP > 99){
         cout << "   ";
     }else if(Player.Stat.HP > 9){
@@ -117,12 +119,14 @@ void HPMPspaceCheck(Entity Player){
     }else{
         cout << "  ";
     }
+    if (MP == true){
     if(Player.Stat.MANA > 9){
         cout << "  ";
     }else{
         cout << " ";
     }
     cout << "             "; //13 spaces
+    }
 }
 void StatusCheckUI(Entity User){
   
@@ -142,6 +146,28 @@ void StatusCheckUI(Entity User){
         cout << " " << "|\033[1;93mSHO\033[0m|" << User.Status.Shock;
     }
 }
+void BattleBar(Entity& Player, bool Insight){
+    if (Player.Misc.Type != CHAMPION){
+         if (Insight == false){
+            cout << "   .------.   .-----.   .-----.   .------.    .-----.  " << endl;
+            cout << "  | "<<Red("Attack")<<" | | "<<Blue("Spell")<<" | | "<<Cyan("Items")<<" | | "<<Gray("Defend")<<" |  | Stats | " << endl;
+            cout << "   '--(1)-'   '-(2)-'   '-(3)-'   '-(0)--'    '-(4)-'  " << "\n\n";
+            // cout << "  +- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +" << endl;
+            // cout << "  | 1 - \033[1;91mAttack\033[0m   2 - \033[1;94mSpells\033[0m   3 - \033[1;96mItems\033[0m   0 - \033[1;90mDefend\033[0m   4 - Stats |" << endl;
+            // cout << "  + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -+" << "\n\n";
+        }else{
+            cout << "  .------.   .-----.   .-----.   .------.    .-------.  " << endl;
+            cout << " | "<<Red("Attack")<<" | | "<<Blue("Spell")<<" | | "<<Cyan("Items")<<" | | "<<Gray("Defend")<<" |  |  Stats  | " << endl;
+            cout << "  '--(1)-'   '-(2)-'   '-(3)-'   '-(0)--'    '-(4,5)-'  " << "\n\n";
+        }
+    }else{
+        cout << "\033[1;95m";
+        cout << "   .-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.  " << endl;
+        cout << "  |                    Obliterate                   | " << endl;
+        cout << "   '-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'  " << "\n\n";
+        cout << "\033[0m";
+    }
+}
 void BattleUI(Entity& Player, Entity& Enemy, bool Insight){
     cout << endl;
             cout << " "; EntityBoxEdgeUI(Player);// P Box
@@ -155,13 +181,13 @@ void BattleUI(Entity& Player, Entity& Enemy, bool Insight){
             cout << endl << " ";
             EntityBoxEdgeUI(Player);// P Box
 
-            HPMPspaceCheck(Player);
+            HPMPspaceCheck(Player, true);
 
     cout << "         ";
     EntityNameStringUI(Enemy, false, true);//Main Enemy Name
     cout << endl;
 
-            HPMPspaceCheck(Player);
+            HPMPspaceCheck(Player, true);
 
             for (int l = 0; l < Player.Misc.NameLenght + 4; l++){cout << " ";}
             cout << "          "; EntityBoxEdgeUI(Enemy);//E Box
@@ -169,17 +195,51 @@ void BattleUI(Entity& Player, Entity& Enemy, bool Insight){
             cout << "\n\n";
 
     if (PlayerTurn == true){
-        if (Insight == false){
-        cout << "  +- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +" << endl;
-        cout << "  | 1 - \033[1;91mAttack\033[0m   2 - \033[1;94mSpells\033[0m   3 - \033[1;96mItems\033[0m   0 - \033[1;90mDefend\033[0m   4 - Stats |" << endl;
-        cout << "  + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -+" << "\n\n";
-        }else{
-        cout << " +- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +" << endl;
-        cout << " | 1 - \033[1;91mAttack\033[0m   2 - \033[1;94mSpells\033[0m   3 - \033[1;96mItems\033[0m   0 - \033[1;90mDefend\033[0m   4 & 5 - Stats |" << endl;
-        cout << " + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -+" << "\n\n";
-        }
+        BattleBar(Player,Insight);
     }
 
+}
+void Battle1v2UI(Entity& Player, Entity& Enemy, Entity& Enemy2, bool Insight){
+    clear();
+    for (int l = 0; l < Enemy.Misc.NameLenght/2; l++){cout << " ";}
+    cout << "    \033[1;91mTARGET\033[0m " << endl;
+            cout << "     "; EntityBoxEdgeUI(Enemy);// E Box
+                StatusCheckUI(Enemy);
+            cout << endl << "     ";
+
+    EntityNameStringUI(Enemy, false, true);//Main E Name
+
+            cout << "           "; EntityBoxEdgeUI(Enemy2);// E2 Box
+                StatusCheckUI(Enemy2);
+            cout << endl << "     ";
+            EntityBoxEdgeUI(Enemy);// E Box
+
+            HPMPspaceCheck(Enemy, true);
+
+    cout << "";
+    EntityNameStringUI(Enemy2, false, true);//Main E2 Name
+    cout << endl;
+
+            HPMPspaceCheck(Enemy, true);
+
+            for (int l = 0; l < Enemy.Misc.NameLenght + 4; l++){cout << " ";}
+            cout << "     "; EntityBoxEdgeUI(Enemy2);//E2 Box
+
+            cout << "\n\n\n";
+
+    cout << "               "; EntityBoxEdgeUI(Player);// P Box
+                StatusCheckUI(Player);
+            cout << endl << "               ";
+
+    EntityNameStringUI(Player, true, true);//Main Player Name
+    cout << endl << "               ";
+    EntityBoxEdgeUI(Player);// P Box
+    cout << "\n\n";
+
+    if (PlayerTurn == true){
+        cout << "[9 - Switch Targets]" << endl;
+        BattleBar(Player,Insight);
+    }
 }
 
 void SpellMenuSpell(Entity& Player, int& Menucount, Spell MenuSpell){
@@ -211,7 +271,7 @@ void SpellMenuUI(Entity& Player){
     
     EntityBoxUI(Player, true, true);
 
-    cout << "                                       Spell Tokens: " << Player.Misc.Spellslots << " " << tokensshow() << endl;
+    cout << "                                       Spell Tokens: " << Player.Misc.Tokens << " " << tokensshow() << endl;
     cout << "+ - 0 > Go Back - - - - - - - - - - - - - - - - - - - - - - - - ~" << "\n|\n";
 
     SpellMenuSpell(Player, Menucount,Player.SpellBag.DefaultSpell);
@@ -267,22 +327,22 @@ void RelicMenuUI(Relic& Option1, Relic& Option2, Relic& Option3, Relic& Option4)
 
     cout << "              -   -   -  -  -  - - - - -- --- ---- -----\033[1mRELICS\033[0m----- ---- --- -- - - - -  -  -  -   -   -" << endl;
     cout << endl;
-    cout << "                             " << Option1.Image.Line1 << "                                        " << Option2.Image.Line1 << endl;
-    cout << "                             " << Option1.Image.Line2 << "                                        " << Option2.Image.Line2 << endl;
-    cout << "                             " << Option1.Image.Line3 << "                                        " << Option2.Image.Line3 << endl;
-    cout << "                             " << Option1.Image.Line4 << "                                        " << Option2.Image.Line4 << endl;
-    cout << "                             " << Option1.Image.Line5 << "                                        " << Option2.Image.Line5 << "\n\n";
+    cout << "                             " << Option1.Lines[0] << "                                        " << Option2.Lines[0] << endl;
+    cout << "                             " << Option1.Lines[1] << "                                        " << Option2.Lines[1] << endl;
+    cout << "                             " << Option1.Lines[2] << "                                        " << Option2.Lines[2] << endl;
+    cout << "                             " << Option1.Lines[3] << "                                        " << Option2.Lines[3] << endl;
+    cout << "                             " << Option1.Lines[4] << "                                        " << Option2.Lines[4] << "\n\n";
     cout << "                          " << Option1.Name << "                                 " << Option2.Name << endl;
     cout << "               *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*            *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*" << endl;
     cout << "                "         << Option1.Desc <<       "              "       << Option2.Desc << endl;
     cout << "               *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*            *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*" << endl;
     cout << "                                (1)                                                (2)                  " << "\n\n";
 
-    cout << "                             " << Option3.Image.Line1 << "                                        " << Option4.Image.Line1 << endl;
-    cout << "                             " << Option3.Image.Line2 << "                                        " << Option4.Image.Line2 << endl;
-    cout << "                             " << Option3.Image.Line3 << "                                        " << Option4.Image.Line3 << endl;
-    cout << "                             " << Option3.Image.Line4 << "                                        " << Option4.Image.Line4 << endl;
-    cout << "                             " << Option3.Image.Line5 << "                                        " << Option4.Image.Line5 << "\n\n";
+    cout << "                             " << Option3.Lines[0] << "                                        " << Option4.Lines[0] << endl;
+    cout << "                             " << Option3.Lines[1] << "                                        " << Option4.Lines[1] << endl;
+    cout << "                             " << Option3.Lines[2] << "                                        " << Option4.Lines[2] << endl;
+    cout << "                             " << Option3.Lines[3] << "                                        " << Option4.Lines[3] << endl;
+    cout << "                             " << Option3.Lines[4] << "                                        " << Option4.Lines[4] << "\n\n";
     cout << "                          " << Option3.Name << "                                 " << Option4.Name << endl;
     cout << "               *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*            *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*" << endl;
     cout << "                "         << Option3.Desc <<       "              "       << Option4.Desc << endl;
@@ -296,7 +356,7 @@ void RelicMenuUI(Relic& Option1, Relic& Option2, Relic& Option3, Relic& Option4)
 }
 
 void PlayerSwitchUI(){
-    sleep(1);
+    usleep(500000);
     clear();
     for (int l = 0; l < 20; l++){
         cout << "\n\n\n\n";
@@ -306,7 +366,7 @@ void PlayerSwitchUI(){
         }
         cout << "\033[1;37mPLAYER SWITCH\033[0m" << endl;
         cout << "\t>- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ->" << endl;
-        usleep(25000);
+        usleep(15000);
         clear();
     }
 }
@@ -904,6 +964,10 @@ void ItemUseEffect(Entity& User, Entity& Target, Item& useItem, uint16_t& Itemsl
         case Armagedon:
         ItmEffArmageddon(User, Target);
         break;
+
+        case Tonic:
+        ItmEffVioletTonic(User);
+        break;
     }
 
     useItem = NoItem;
@@ -1012,7 +1076,7 @@ void StatMenuRelicCheck(Entity& Player, Relic Relic){
 }
 void StatMenu(Entity& User){
     string CLASS;
-    float TotalStats = User.Stat.ATK + User.Stat.MAXHP + User.Stat.MAXMANA + User.Stat.MA + User.Stat.AC + User.Stat.CRIT + User.Stat.DODGE;
+    float TotalStats = User.Stat.ATK + User.Stat.MAXHP + User.Stat.MAXMANA + User.Stat.MA + User.Stat.DEF + User.Stat.CRIT + User.Stat.DODGE;
 
     switch (User.Misc.Class){
         case Gladiator:
@@ -1053,21 +1117,21 @@ void StatMenu(Entity& User){
     clear();
     cout << "\t+----------------------------------------+" << endl;
     if (User.Misc.Level >= 10){
-        cout << "\t\t STATS: " << User.Name << " [Lv MAX]" << "\t Class: " << CLASS << endl;
+        cout << "\t\t STATS: " << User.Name << " [Lv MAX]" << "  Class: " << CLASS << endl;
     }else{
-        cout << "\t\t STATS: " << User.Name << " [Lv " << User.Misc.Level << "]" << "\t Class: " << CLASS << endl;
+        cout << "\t\t STATS: " << User.Name << " [Lv " << User.Misc.Level << "]" << "  Class: " << CLASS << endl;
     }
-    cout << "\t+----------------------------------------+" << endl;
-    cout << "\t |\033[91mBRN\033[0m| = " << User.Status.Burn << " |\033[92mPSN\033[0m| = " << User.Status.Poison << " |\033[96mFRZ\033[0m| = " << User.Status.Freeze << " |\033[93mSHO\033[0m| = " << User.Status.Shock << endl;
-    cout << "\t+----------------------------------------+" << endl;
-    cout << "\t|     MAX \033[91mHP\033[0m = " << User.Stat.MAXHP << "       MAX \033[94mMana\033[0m = " << User.Stat.MAXMANA << "\t |" << endl;
-    cout << "\t| Current \033[91mHP\033[0m = " << User.Stat.HP << "   Current \033[94mMana\033[0m = " << User.Stat.MANA << "\t |" << endl;
-    cout << "\t+-----------------+----------------------+" << endl;
-	cout << "\t|   ATK = " << User.Stat.ATK << "\t  |     \033[33mGold\033[0m   = " << User.Stat.Gold << goldshow() << " \t |\033[90m ATK = Attack\033[0m" << endl;
-    cout << "\t|    MA = " << User.Stat.MA  << "\t  |    \033[95mTokens\033[0m  = " << User.Misc.Spellslots << " \t |\033[90m MA = Magic\033[0m" << endl;
-    cout << "\t|    AC = " << User.Stat.AC << "\t  |   [Defense = " << User.Stat.DEF << "]" << " \t |\033[90m AC = Armor Class  [Defense = AC / 2]\033[0m" << endl;
-    cout << "\t|  CRIT = " << User.Stat.CRIT << "%" << "\t  |   [CritDmg = " << User.Stat.CRITMULT*100 << "%]" << " \t |\033[90m CRIT = Critical Hit%\033[0m" << endl;
-    cout << "\t| DODGE = " << User.Stat.DODGE << "%" <<"\t  |   [XP Gain = " << User.Misc.XPMult*100 << "%]" << " \t |\033[90m DODGE = Dodge Chance%\033[0m" << endl;
+    cout << "\t+----------------------------------------+" << "\t+----------------+----------------+" << endl;                                                                                                                //+----------------+----------------+
+    cout << "\t |\033[91mBRN\033[0m| = " << User.Status.Burn << " |\033[92mPSN\033[0m| = " << User.Status.Poison << " |\033[96mFRZ\033[0m| = " << User.Status.Freeze << " |\033[93mSHO\033[0m| = " << User.Status.Shock << "  \t|\033[1;4;91m - - WEAPON - - \033[0;4m|\033[1;4;94m - - SHIELD - - \033[0m|" << endl;
+    cout << "\t+----------------------------------------+" << "\t| ATKMult  = "<< User.Multiplier.ATKMult*100 <<"%| DEFMult  = "<< User.Multiplier.ACMult*100 <<"%|" << endl;
+    cout << "\t|     MAX \033[91mHP\033[0m = " << User.Stat.MAXHP << "       MAX \033[94mMana\033[0m = " << User.Stat.MAXMANA << "\t |\t|MAGICMult = "<< User.Multiplier.MAGICMult*100 <<"%|BlockMult = "<< User.Multiplier.DefMult*100 <<"%|" << endl;
+    cout << "\t| Current \033[91mHP\033[0m = " << User.Stat.HP << "   Current \033[94mMana\033[0m = " << User.Stat.MANA << "\t |\t|Gold Gain = "<< User.Multiplier.GoldMult*100 <<"%| ManaMult = "<< User.Multiplier.ManaMult*100 <<"%";if (User.Multiplier.ManaMult>0.99){cout << "|";}else if (User.Multiplier.ManaMult>0.09){cout << " |";}else{cout << "  |";}cout << endl;
+    cout << "\t+-----------------+----------------------+" << "\t+----------------+----------------+" << endl;
+	cout << "\t|   ATK = " << User.Stat.ATK << "\t  |     \033[33mGold\033[0m   = " << User.Stat.Gold << goldshow() << " \t |" << endl;
+    cout << "\t| MAGIC = " << User.Stat.MA  << "\t  |    \033[95mTokens\033[0m  = " << User.Misc.Tokens <<           " \t |\033[91m Burn   = Halves ATK Damage & Chips HP\033[0m" << endl;
+    cout << "\t|   DEF = " << User.Stat.DEF << "\t  | Shop Prices = " << User.Multiplier.PriceMult*100 << "%" <<     " \t |\033[92m Poison = Chips 8% of Enemy HP\033[0m" << endl;
+    cout << "\t| CRIT% = " << User.Stat.CRIT << "%" << "\t  |  [CritDmg = " << User.Stat.CRITMULT*100 << "%]" <<     " \t |\033[96m Freeze = Skips a Turn   \033[0m" << endl;
+    cout << "\t| DODGE = " << User.Stat.DODGE << "%" <<"\t  |  [XP Gain = " << User.Multiplier.XPMult*100 << "%]" << " \t |\033[93m Shock  = Drops DEF by 66% (Sinergy w/ BRN & PSN)\033[0m" << endl;
     cout << "\t+-----------------+----------------------+" << endl;
 
     if (User.Misc.Type == PLAYER1 || User.Misc.Type == PLAYER2){
@@ -1127,7 +1191,7 @@ void StatMenu(Entity& User){
 
 void RevivebyUnderworldSkull(Entity&Player, Entity&Killer){
 
-    if(Killer.Misc.Type == CHAMPION){
+    if(Killer.Misc.Type == CHAMPION){ //Champion Nullifyng
         if (Player.Misc.Type == PLAYER1){
                 RlcUnderworldSkull.Obtained.P1 = false;
         }else if (Player.Misc.Type == PLAYER2){
@@ -1187,6 +1251,8 @@ void RevivebyUnderworldSkull(Entity&Player, Entity&Killer){
     return;
 }
 void PlayerDeath(Entity& Player, Entity& Killer){
+
+    GameOver = true;
 
     RevivebyUnderworldSkull(Player, Killer);
     
@@ -1250,22 +1316,19 @@ void PlayerDeath(Entity& Player, Entity& Killer){
 void StatusEffectsDamage(Entity& Target){
 
     if (Target.Status.Poison > 0){
-        Damage = Target.Stat.MAXHP * 0.09;
-        if(Damage < 3){
-            Damage = 3;
+        Damage = Target.Stat.MAXHP * 0.08;
+        if(Damage < 5){
+            Damage = 5;
         }
         if (Target.Status.Shock > 0){
             Damage *= 1.5;
         }
-        if (Damage > 99){
-            Damage = 99;
-        }
 
         Target.Status.Poison--;
 
-        cout << Target.Name << " is hurt by poison (" << Damage << " damage";
+        cout << Target.Name << " is hurt by "<<Green("Poison")<<" (" << Damage << " damage";
         if (Target.Status.Shock > 0) {
-            cout << " [Shock Boost]";
+            cout << " ["<<Yellow("Shock Boost")<<"]";
         }
         cout << ")" << "\n\n";
 
@@ -1282,9 +1345,9 @@ void StatusEffectsDamage(Entity& Target){
 
         Target.Status.Burn--;
 
-        cout << Target.Name << " is burned (" << Damage << " damage";
+        cout << Target.Name << " is "<<Red("Burned")<<" (" << Damage << " damage";
         if (Target.Status.Shock > 0) {
-            cout << " [Shock Boost]";
+            cout << " ["<<Yellow("Shock Boost")<<"]";
         }
         cout << ")" << "\n\n";
 
@@ -1299,11 +1362,12 @@ void StatusEffectsDamage(Entity& Target){
     Damage = 0;
 }
 
-void LevelUPStatSpread(Entity& Player, int maxhp,int maxmana,float atk,float ma,float ac,float crit,float dodge){
+void LevelUPStatSpread(Entity& Player, int maxhp,int maxmana,float atk,float ma,float def,float crit,float dodge){
     // Levels 2, 4, 6, 8 give a token; level 3 gives Great Heal and 9 gives Supreme Heal; Levels 5 and 10(MAX) give class spell upgrades; 1,2,3,4,5,6,,8,9,10
     Spell ClassSpellLv2;
     Spell ClassSpellLv3;
     int GiveToken = 0;
+    int ExtraSpellSlot = 0;
     string SpellUpgradeName = "No";
     Player.Misc.Level++;
 
@@ -1341,12 +1405,14 @@ void LevelUPStatSpread(Entity& Player, int maxhp,int maxmana,float atk,float ma,
     
     switch (Player.Misc.Level) {
         case 2:
-        GiveToken++;
+        GiveToken+=2;
+        ExtraSpellSlot++;
         break;
 
         case 3:
         SpellUpgradeName = Player.SpellBag.DefaultSpell.Name;
         Player.SpellBag.DefaultSpell = SplGreatHeal;
+        GiveToken++;
         break;
 
         case 4:
@@ -1356,10 +1422,17 @@ void LevelUPStatSpread(Entity& Player, int maxhp,int maxmana,float atk,float ma,
         case 5:
         SpellUpgradeName = Player.SpellBag.SigSpell.Name;
         Player.SpellBag.SigSpell = ClassSpellLv2;
+        GiveToken+=2;
+        ExtraSpellSlot++;
         break;
 
         case 6:
         GiveToken++;
+        break;
+
+        case 7:
+        GiveToken++;
+        ExtraSpellSlot++;
         break;
 
         case 8:
@@ -1369,6 +1442,7 @@ void LevelUPStatSpread(Entity& Player, int maxhp,int maxmana,float atk,float ma,
         case 9:
         SpellUpgradeName = Player.SpellBag.DefaultSpell.Name;
         Player.SpellBag.DefaultSpell = SplSupremeHeal;
+        GiveToken++;
         break;
 
         case 10:
@@ -1396,15 +1470,19 @@ void LevelUPStatSpread(Entity& Player, int maxhp,int maxmana,float atk,float ma,
 
     cout << "            MA (" << Player.Stat.MA << ")     "; usleep(50000); cout << ArrowAnim(11); usleep(50000); cout <<"        MA (" << Player.Stat.MA + ma << ") [+" << ma << "]     " << "\n\n"; usleep(100000);
 
-    cout << "            AC (" << Player.Stat.AC << ")     "; usleep(50000); cout << ArrowAnim(11); usleep(50000); cout <<"        AC (" << Player.Stat.AC + ac << ") [+" << ac << "]     " << "\n\n"; usleep(100000);
+    cout << "           DEF (" << Player.Stat.DEF << ")     "; usleep(50000); cout << ArrowAnim(11); usleep(50000); cout <<"       DEF (" << Player.Stat.DEF + def << ") [+" << def << "]     " << "\n\n"; usleep(100000);
 
     cout << "         CRIT% (" << Player.Stat.CRIT << "%)    "; usleep(50000); cout << ArrowAnim(11); usleep(50000); cout <<"     CRIT% (" << Player.Stat.CRIT + crit << "%) [+" << crit << "%]   " << endl; usleep(100000);
     cout << "        DODGE% (" << Player.Stat.DODGE << "%)    "; usleep(50000); cout << ArrowAnim(11); usleep(50000); cout <<"    DODGE% (" << Player.Stat.DODGE + dodge << "%) [+" << dodge << "%]  " << "\n\n"; usleep(100000);
 
     usleep(500000);
 
+    if (ExtraSpellSlot >= 1){
+    cout << "   [+"<<ExtraSpellSlot<<" \033[1;94mSpell Slot\033[0m!]" << "\n\n";
+        usleep(500000);
+    }
     if (GiveToken >= 1){
-    cout << "   [+1 Spell Token!]" << "\n\n";
+    cout << "   [+"<<GiveToken<<" \033[1;95mSpell Token\033[0m!]" << "\n\n";
         usleep(500000);
     }
     if (SpellUpgradeName != "No"){
@@ -1421,10 +1499,11 @@ void LevelUPStatSpread(Entity& Player, int maxhp,int maxmana,float atk,float ma,
     Player.Stat.MANA += maxmana;
     Player.Stat.ATK += atk;
     Player.Stat.MA += ma;
-    Player.Stat.AC += ac;
+    Player.Stat.DEF += def;
     Player.Stat.CRIT += crit;
     Player.Stat.DODGE += dodge;
-    Player.Misc.Spellslots += GiveToken;
+    Player.Misc.Tokens += GiveToken;
+    Player.Misc.Spellslots += ExtraSpellSlot;
 
     StatOverflowCheck(Player);
 
@@ -1436,19 +1515,19 @@ void LevelUP(Entity& Player){
 
     switch (Player.Misc.Class){
         case Gladiator:
-        LevelUPStatSpread(Player, 5, 4, 2, 2, 3, 1, 1.5);
+        LevelUPStatSpread(Player, 5, 3, 2, 2, 3, 1, 1.5);
         break;
 
         case Wanderer:
-        LevelUPStatSpread(Player, 4, 5, 1, 4, 2, 1, 1);
+        LevelUPStatSpread(Player, 4, 4, 1, 4, 2, 1, 1);
         break;
 
         case Berserker:
-        LevelUPStatSpread(Player, 6, 3, 3, 1, 2, 2, 1);
+        LevelUPStatSpread(Player, 6, 2, 3, 1, 2, 2, 1);
         break;
 
         case BlackKnight:
-        LevelUPStatSpread(Player, 5, 4, 3, 3, 3, 0.5, 0.5);
+        LevelUPStatSpread(Player, 5, 3, 3, 3, 3, 0.5, 0.5);
         break;
 
         case God:
@@ -1471,29 +1550,28 @@ void VictoryScreen(Entity& Player, Entity& Enemy){
     bool HPValid = false, AvailableItemSlot = true;
     int GainGold, GainXP, GainMana, GainHP = 0;
 
-    int EnemyTotalStats = (Enemy.Stat.MAXHP + Enemy.Stat.AC + Enemy.Stat.ATK + Enemy.Stat.MA + Enemy.Stat.CRIT + Enemy.Stat.DODGE);
+    int EnemyTotalStats = (Enemy.Stat.MAXHP + Enemy.Stat.MAXMANA + Enemy.Stat.DEF + Enemy.Stat.ATK + Enemy.Stat.MA + Enemy.Stat.CRIT + Enemy.Stat.DODGE);
 
     Item SpoilItem = NoItem;
     SpoilItem.Name = "           None";
 
     FullHeal(Enemy);
 
-    GainGold = ((Player.Misc.Level/2 + 1) + Enemy.Misc.Level + (Player.Stat.Gold/10) + 1) * Player.Misc.GoldMult;
-    GainXP =   ((EnemyTotalStats) * ((Enemy.Misc.Level * 0.25) + 1) * Player.Misc.XPMult);
-    GainMana = (Player.Stat.MAXMANA / 5) * Player.Misc.ManaMult;
+    GainGold = ((Player.Misc.Level/2) + Enemy.Misc.Level + 2) * Player.Multiplier.GoldMult;
+    GainXP   = ((EnemyTotalStats / 2) * ((Enemy.Misc.Level * 0.05) + 1) * Player.Multiplier.XPMult) / ((Player.Misc.Level * 0.10) + 0.9);
+    GainMana = Player.Stat.MAXMANA * Player.Multiplier.ManaMult;
 
-    WaveRound++;
     TotalRound++;
 
     if (Player.Misc.Type == PLAYER1){ // EdibleHeart Check
         if (RlcEdibleHeart.Obtained.P1 == true){
             HPValid = true;
-            GainHP = Player.Stat.MAXHP * 0.15;
+            GainHP = Player.Stat.MAXHP * 0.2;
         }
     }else if (Player.Misc.Type == PLAYER2){
         if (RlcEdibleHeart.Obtained.P2 == true){
             HPValid = true;
-            GainHP = Player.Stat.MAXHP * 0.15;
+            GainHP = Player.Stat.MAXHP * 0.2;
         }
     }
 
@@ -1543,7 +1621,7 @@ void VictoryScreen(Entity& Player, Entity& Enemy){
 
     if (Player.Stat.XP >= Player.Misc.XPThreshold && Player.Misc.Level < 10){
 
-        int threshholds[] = {0, 100, 150, 220, 300, 400, 500, 600, 720, 860, 999}; // 4849 total XP needed
+        int threshholds[] = {0, 100, 200, 300, 400, 500, 600, 720, 850, 999, 0}; // 4669 total XP needed
 
         Player.Stat.XP -= Player.Misc.XPThreshold;
         LevelUP(Player);
@@ -1747,74 +1825,80 @@ void RelicDrop(Entity& Player){
 
 void EnemyScaling(Entity& enemy){
 
-    enemy.ItemBag.Item1 = ItemGetRandomEnemy();
-
     EntityType Type = enemy.Misc.Type;
 
-Entity F3(96,30,36,3,20,0,5,0, Type, "Enemy");
-Entity F2(74,25,30,3,14,0,4,0, Type, "Enemy");
-Entity F1(50,20,22,3,10,0,3,0, Type, "Enemy");
+Entity F3(400,30,80,3,20,5,5,0, Type, "Enemy");
+Entity F2(280,25,60,3,14,4,4,0, Type, "Enemy");
+Entity F1(156,20,40,3,10,3,3,0, Type, "Enemy");
 
-Entity W6(1,70,4,3,0,0,0,0, FALLEN, "Fallen");
-Entity W5(112,25,27,11,0,0,4,0, Type, "Enemy");
-Entity W4(70,20,19,3,8,0,3,0, Type, "Enemy");
-Entity W3(40,15,13,3,5,0,2,0, Type, "Enemy");
-Entity W2(24,10,8,3,2,0,1,0, Type, "Enemy");
-Entity W1(16,5,4,3,0,0,0,0, Type, "Enemy");
+Entity W6(1,70,1,1,0,0,0,0, FALLEN, "Fallen");
+Entity W5(210,25,58,3,0,4,4,0, Type, "Enemy");
+Entity W4(104,20,35,3,8,3,3,0, Type, "Enemy");
+Entity W3(50,15,20,3,5,2,2,0, Type, "Enemy");
+Entity W2(26,10,10,3,2,1,1,0, Type, "Enemy");
+Entity W1(16,10,5,3,0,0,0,0, Type, "Enemy");
 
     float AttackScale = 0.5;
     int AttackScaleMult = 1;
 
-    float ACScale = 0.25;
-    int ACScaleMult = 1;
+    float DEFScale = 0.5;
+    int DEFScaleMult = 1;
 
     switch (Floor){
         case 3:
         enemy = F3;
         AttackScaleMult = 4;
-        ACScaleMult = 4;
+        DEFScaleMult = 4;
+        enemy.Misc.Level = 7;
         break;
 
         case 2:
         enemy = F2;
         AttackScaleMult = 3;
-        ACScaleMult = 4;
+        DEFScaleMult = 4;
+        enemy.Misc.Level = 6;
         break;
 
         case 1:
         enemy = F1;
         AttackScaleMult = 3;
-        ACScaleMult = 3;
+        DEFScaleMult = 3;
+        enemy.Misc.Level = 5;
         break;
         
         case 0:
             switch (Wave){
                 case 6:
                 enemy = W6;
+                enemy.Misc.Level = 1;
                 break;
 
                 case 5:
                 enemy = W5;
                 AttackScaleMult = 4;
-                ACScaleMult = 4;
+                DEFScaleMult = 4;
+                enemy.Misc.Level = 5;
                 break;
 
                 case 4:
                 enemy = W4;
                 AttackScaleMult = 3;
-                ACScaleMult = 4;
+                DEFScaleMult = 4;
+                enemy.Misc.Level = 4;
                 break;
 
                 case 3:
                 enemy = W3;
                 AttackScaleMult = 2;
-                ACScaleMult = 3;
+                DEFScaleMult = 3;
+                enemy.Misc.Level = 3;
                 break;
 
                 case 2:
                 enemy = W2;
                 AttackScaleMult = 2;
-                ACScaleMult = 2;
+                DEFScaleMult = 2;
+                enemy.Misc.Level = 2;
                 break;
 
                 case 1:
@@ -1828,31 +1912,33 @@ Entity W1(16,5,4,3,0,0,0,0, Type, "Enemy");
         case 1:
         enemy.Stat.MAXHP *= 1;
         enemy.Stat.ATK += (AttackScale * WaveRound) * AttackScaleMult;
-        enemy.Stat.AC += (ACScale * WaveRound) * ACScaleMult;
+        enemy.Stat.DEF += (DEFScale * WaveRound) * DEFScaleMult;
         break;
         case 2:
         enemy.Stat.MAXHP *= 1.20;
         enemy.Stat.ATK += (AttackScale * WaveRound) * AttackScaleMult;
-        enemy.Stat.AC += (ACScale * WaveRound) * ACScaleMult;
+        enemy.Stat.DEF += (DEFScale * WaveRound) * DEFScaleMult;
         break;
         case 3:
         enemy.Stat.MAXHP *= 1.40;
         enemy.Stat.ATK += (AttackScale * WaveRound) * AttackScaleMult;
-        enemy.Stat.AC += (ACScale * WaveRound) * ACScaleMult;
+        enemy.Stat.DEF += (DEFScale * WaveRound) * DEFScaleMult;
         break;
         case 4:
         enemy.Stat.MAXHP *= 1.60;
         enemy.Stat.ATK += (AttackScale * WaveRound) * AttackScaleMult;
-        enemy.Stat.AC += (ACScale * WaveRound) * ACScaleMult;
+        enemy.Stat.DEF += (DEFScale * WaveRound) * DEFScaleMult;
         break;
         case 5:
-        enemy.Stat.MAXHP *= 2;
+        enemy.Stat.MAXHP *= 2.25;
         enemy.Stat.ATK += (AttackScale * WaveRound) * AttackScaleMult * 1.25;
-        enemy.Stat.AC += (ACScale * WaveRound) * ACScaleMult * 1.25;
+        enemy.Stat.DEF += (DEFScale * WaveRound) * DEFScaleMult * 1.25;
         enemy.Stat.CRIT = 5;
+        enemy.Misc.Level++;
         break;
     }
 
+    enemy.ItemBag.Item1 = ItemGetRandomEnemy();
     enemy.Stat.HP = enemy.Stat.MAXHP;
 }
 
@@ -1862,7 +1948,7 @@ void PlayerTurnBattle(Entity& Player, Entity& Enemy){
 Start:
     PlayerTurn = true;
     Damage = 0;
-    Player.Stat.DEF = Player.Stat.AC / 2;
+    Player.Stat.Block = Player.Stat.DEF * Player.Multiplier.ACMult;
 
     bool validturn = false;
     bool Insight = false;
@@ -1881,7 +1967,7 @@ Start:
 
 
     if (Player.Status.Shock > 0){// Shock Check
-        Player.Stat.DEF /= 3;
+        Player.Stat.Block /= 3;
     }
     if (Player.Status.Freeze > 0){//Freeze Check
         PlayerTurn = false;
@@ -1901,6 +1987,12 @@ Start:
             PlayerInput(Action);
 
             validturn = true;
+
+            if (Player.Misc.Type == CHAMPION){// Champion Attack for Violet Tonic
+                ArmageddonAnim("\033[45;30m", 1.3);
+                Damage = 9999;
+                break;
+            }
 
             switch (Action) {
 
@@ -1977,7 +2069,7 @@ Start:
         if (RlcCheatScroll.Obtained.P1 == true){
             Chance = rand() % 20 + 1;
             if (Chance <= 3){// 15% chance
-                cout << endl << "_  _  _ _ _ ____EXTRA TURN____ _ _ _  _  _" << "\n\n";
+                ExtraTurnPopupUI();
                 goto Start;
             }
         }
@@ -1985,23 +2077,223 @@ Start:
         if (RlcCheatScroll.Obtained.P2 == true){
             Chance = rand() % 20 + 1;
             if (Chance <= 3){
-                cout << endl << "_  _  _ _ _ ____EXTRA TURN____ _ _ _  _  _" << "\n\n";
+                ExtraTurnPopupUI();
                 goto Start;
             }
         }
     }
 
-    usleep(500000);
+    usleep(250000);
     clear();
 }
+void PlayerTurnBattlev2(Entity& Player, Entity& Enemy, Entity&Enemy2, bool& Switch){
+Start:
+    PlayerTurn = true;
+    Damage = 0;
+    Player.Stat.Block = Player.Stat.DEF * Player.Multiplier.ACMult;
+
+    bool validturn = false;
+    bool Insight = false;
+    int Action; // 0 = Defend, 1 = Attack, 2 = Spells, 3 = Consumable, 4 = Stats
+
+    int Deadtalk = 1;
+
+    if (Player.Misc.Type == PLAYER1){ // Insightful Lenses Check
+        if (RlcInsightfulLenses.Obtained.P1 == true){
+            Insight = true;
+        }
+    }else if (Player.Misc.Type == PLAYER2){
+        if (RlcInsightfulLenses.Obtained.P2 == true){
+            Insight = true;
+        }
+    }
+
+
+    if (Player.Status.Shock > 0){// Shock Check
+        Player.Stat.Block /= 3;
+    }
+    if (Player.Status.Freeze > 0){//Freeze Check
+        PlayerTurn = false;
+        Battle1v2UI(Player, Enemy, Enemy2, Insight);
+        sleep(1);
+        cout << "You're Frozen" << endl << endl;
+        sleep(1);
+        Player.Status.Freeze--;
+        return;
+    }
+
+        while (true){
+
+            Battle1v2UI(Player, Enemy, Enemy2, Insight);
+
+            cout << "Your Turn: ";
+            PlayerInput(Action);
+
+            validturn = true;
+
+            if (Player.Misc.Type == CHAMPION){// Champion Attack for Violet Tonic
+                ArmageddonAnim("\033[45;30m", 1.3);
+                Damage = 9999;
+                break;
+            }
+
+            switch (Action) {
+
+                case 0:
+                    cout << Player.Name << " used Defend" << "\n\n";
+                    Defend(Player);
+                    break;
+
+                case 1:
+                    cout << Player.Name << " used Attack" << "\n\n";
+                    BasicAttack(Player, Enemy);
+                    break;
+
+                case 2:
+                    SpellPlayerAction(Player, Enemy, validturn);
+                    break;
+
+                case 3:
+                    ItemPlayerAction(Player, Enemy, validturn);
+                    break;
+
+                case 4:
+                    StatMenu(Player);
+                    validturn = false;
+                    break;
+
+                case 5:
+                if(Insight == true){
+                    StatMenu(Enemy);
+                    validturn = false;
+                    break;
+                }else{goto invalid;}
+
+                case 9:
+                if (Enemy2.Stat.HP > 0){
+                Switch = true;
+                return;
+                }else{
+                    switch (Deadtalk){//Stupid easteregg
+                        case 3:
+                        cout << Enemy2.Name << " is still dead";
+                        break;
+                        case 4:
+                        cout << Enemy2.Name << " continues to lie dead";
+                        break;
+                        case 5:
+                        cout << "Dead as hell";
+                        break;
+                        case 6:
+                        cout << "Like super dead";
+                        break;
+                        case 7:
+                        cout << Enemy2.Name << " is deeeeeaad";
+                        break;
+                        case 8:
+                        cout << Enemy2.Name << " is DEFINETELY not alive";
+                        break;
+                        case 9:
+                        cout << "Ok, are you fucking stupid?";
+                        break;
+                        case 10:
+                        cout << Player.Name << " is a fucking moron";
+                        break;
+                        case 11:
+                        cout << Player.Name << " doesn't understand the meaning of death";
+                        break;
+                        case 12:
+                        cout << Player.Name << " is annoying as shit...";
+                        break;
+                        case 13:
+                        cout << "Alright enough of 4th wall breaking";
+                        break;
+                        case 14:
+                        cout << "You can just attack " << Enemy.Name;
+                        break;
+                        case 15:
+                        cout << "I'll stop lecturing you";
+                        break;
+                        default:
+                        cout << Enemy2.Name << " is dead";
+                        break;
+                    }
+                Deadtalk++;
+                validturn = false;
+                sleep (1);
+                clear();
+                }
+                break;
+
+                default:
+                    invalid:
+                    cout << "Invalid move";
+                    validturn = false;
+                    sleep (1);
+                    clear();
+            }
+
+            if (validturn == true){
+                PlayerTurn = false;
+                break;
+            }
+
+        }
+
+    Enemy.Stat.HP -= Damage;
+    StatusEffectsDamage(Enemy);
+
+            
+    if (Player.Misc.Type == PLAYER1){ // EggPal Check
+        if (RlcEggPal.Obtained.P1 == true){
+            Chance = rand() % 2 + 1;
+            if (Chance == 2){// 50% chance
+                EggPalAction(Player, Enemy);
+            }
+        }
+    }else if (Player.Misc.Type == PLAYER2){
+        if (RlcEggPal.Obtained.P2 == true){
+            Chance = rand() % 2 + 1;
+            if (Chance == 2){// 50% chance
+                EggPalAction(Player, Enemy);
+            }
+        }
+    }
+
+    if (Enemy.Stat.HP <= 0){ //Return if dead enemy
+        return;
+    }    
+
+    if (Player.Misc.Type == PLAYER1){ // CheatScroll Check
+        if (RlcCheatScroll.Obtained.P1 == true){
+            Chance = rand() % 20 + 1;
+            if (Chance <= 3){// 15% chance
+                ExtraTurnPopupUI();
+                goto Start;
+            }
+        }
+    }else if (Player.Misc.Type == PLAYER2){
+        if (RlcCheatScroll.Obtained.P2 == true){
+            Chance = rand() % 20 + 1;
+            if (Chance <= 3){
+                ExtraTurnPopupUI();
+                goto Start;
+            }
+        }
+    }
+
+    usleep(250000);
+    clear();
+}
+
 void EnemyTurnBattle(Entity& Enemy, Entity& Player){
 
     Damage = 0;
-    Enemy.Stat.DEF = Enemy.Stat.AC / 2;
+    Enemy.Stat.Block = Enemy.Stat.DEF * Enemy.Multiplier.ACMult;
     bool Insight;
 
     if (Enemy.Status.Shock > 0){
-        Enemy.Stat.DEF /= 3;
+        Enemy.Stat.Block /= 3;
     }
 
     if (Enemy.Status.Freeze > 0){//Freeze Check
@@ -2040,28 +2332,84 @@ void EnemyTurnBattle(Entity& Enemy, Entity& Player){
     Player.Stat.HP -= Damage;
     StatusEffectsDamage(Player);
 
-    usleep(500000);
+    usleep(250000);
     clear();
 }
 
-void ChampionTurnBattle(Entity& Player, int& ChargeTurns){
-    
+void EnemyTurnBattlev2(Entity& Enemy, Entity& Enemy2, Entity& Player){
+
     Damage = 0;
-    TheChampion.Stat.DEF = TheChampion.Stat.AC / 2;
+    Enemy.Stat.Block = Enemy.Stat.DEF * Enemy.Multiplier.ACMult;
     bool Insight;
 
-    if (TheChampion.Status.Shock > 0){
-        TheChampion.Stat.DEF /= 3;
+    if (Enemy.Status.Shock > 0){
+        Enemy.Stat.Block /= 3;
     }
 
-    //BattleUI(Player, TheChampion, Insight);
-
-    if (TheChampion.Status.Freeze > 0){//Freeze Check
-        cout << TheChampion.Name << " is Frozen" << endl << endl;
+    if (Enemy.Status.Freeze > 0){//Freeze Check
+        cout << Enemy.Name << " is \033[1;96mFrozen\033[0m" << endl << endl;
         sleep(1);
-        TheChampion.Status.Freeze--;
+        Enemy.Status.Freeze--;
         return;
     }
+
+    Battle1v2UI(Player, Enemy, Enemy2, Insight);
+    usleep(350000);
+
+        int EnemyAction = 1;
+
+        if (Enemy.Stat.HP <= (Enemy.Stat.MAXHP / 4) ){ //Defend Chance
+            Chance = rand() % 3 + 1;
+            if (Chance == 3){
+                EnemyAction = 0;
+            }
+        }
+
+        switch (EnemyAction){ //0 - Defend  1 - Attack
+
+            case 0:
+                cout << Enemy.Name << " used Defend" << "\n\n";
+                Defend(Enemy);
+                break;
+
+            case 1:
+                cout << Enemy.Name << " used Attack" << "\n\n";
+                BasicAttack(Enemy, Player);
+                break;
+
+        }
+
+    Player.Stat.HP -= Damage;
+    StatusEffectsDamage(Player);
+
+    usleep(250000);
+    clear();
+}
+
+
+void ChampionTurnBattle(Entity& Player, Entity& Champ, int& ChargeTurns){
+    
+    Damage = 0;
+    Champ.Stat.Block = Champ.Stat.DEF;
+    bool Insight;
+    int HPRegen = 100;
+
+    if (Champ.Status.Shock > 0){
+        Champ.Stat.Block /= 3;
+    }
+
+    //BattleUI(Player, Champ, Insight);
+
+    if (Champ.Status.Freeze > 0){//Freeze Check
+        cout << Champ.Name << " is Frozen" << endl << endl;
+        sleep(1);
+        Champ.Status.Freeze--;
+        return;
+    }
+
+    Champ.Stat.HP += HPRegen;
+    cout << Champ.Name << " healed " << HPRegen << " HP" << endl;
+    usleep(600000);
 
     switch (ChargeTurns){ //Dialogue(Player,Hero,Champion,false,"\033[1;95m","","\033[0m",0);
         case 5:
@@ -2078,7 +2426,7 @@ void ChampionTurnBattle(Entity& Player, int& ChargeTurns){
         case 3:
         Dialogue(Player,Hero,Champion,false,"\033[1;95m\t\t\t\t\t\t_______","\t\t\t\t\t\t______|","\t\t\t\t\t\t______|\033[0m",0);
         Dialogue(Player,Hero,Champion,false,"\033[1;95m","Mother Dasha... Father Sogro...","\033[0m",0);
-        Dialogue(Player,Hero,Champion,false,"\033[1;95m","Family... I want to forget","\033[0m",0);
+        Dialogue(Player,Hero,Champion,false,"\033[1;95m","Family...","\033[0m",0);
         break;
         case 2:
         Dialogue(Player,Hero,Champion,false,"\033[1;95m\t\t\t\t\t\t_______","\t\t\t\t\t\t______|","\t\t\t\t\t\t|______\033[0m",0);
@@ -2092,9 +2440,9 @@ void ChampionTurnBattle(Entity& Player, int& ChargeTurns){
         break;
         case 0:
         Dialogue(Player,Hero,Champion,false,"\033[1;95m\t\t\t\t\t\t ______","\t\t\t\t\t\t|      |","\t\t\t\t\t\t|______|\033[0m",0);
-        DialogueDramatic(Player,Hero,Champion,false,"","","Time's up","\033[1;95m",120000,800000);
-        DialogueDramatic(Player,Hero,Champion,false,"","","May you be remebered for your efforts","\033[1;95m",120000,800000);
-        DialogueDramatic(Player,Hero,Champion,false,"","","Farewell, fallen Warrior","\033[1;95m",250000,1200000);
+        DialogueDramatic(Player,Hero,Champion,false,"","","Time's up","\033[1;95m",80000,800000);
+        DialogueDramatic(Player,Hero,Champion,false,"","","May you be remebered for your efforts","\033[1;95m",80000,800000);
+        DialogueDramatic(Player,Hero,Champion,false,"","","Farewell, fallen Warrior","\033[1;95m",150000,1000000);
 
         ArmageddonAnim("\033[45;30m", 1.3);
         Damage = 9999;
@@ -2102,6 +2450,8 @@ void ChampionTurnBattle(Entity& Player, int& ChargeTurns){
     }
 
     ChargeTurns--;
+    StatOverflowCheck(Champ);
+
     Player.Stat.HP -= Damage;
     StatusEffectsDamage(Player);
 }
@@ -2117,14 +2467,15 @@ void Battle(Entity& Player, Entity& Enemy){
         cout << "< ROUND: " << WaveRound << " >\n\n";
     }
     
-    Enemy.Stat.DEF = Enemy.Stat.AC / 2;
+    Enemy.Stat.Block = Enemy.Stat.DEF;
 
     while (true){
 
         if (Player.Stat.HP <= 0){//Player Death
-            GameOver = true;
             PlayerDeath(Player, Enemy);
-            return;
+            if (GameOver == true){
+                return;
+            }
         }
 
             PlayerTurnBattle(Player, Enemy);
@@ -2141,33 +2492,186 @@ void Battle(Entity& Player, Entity& Enemy){
     }
     VictoryScreen(Player, Enemy);
 }
+void Battle1v2(Entity& Player, Entity& Enemy, Entity& Enemy2){
 
+    int Enemies = 2;
+    bool Enemy1Act = true, Enemy2Act = true, Target1 = true, Switch = false;
+
+    if (Enemy.Misc.Type == BOSS){
+        BossIncomingUI();
+        BossWeakeningbyCorruptSigil(Player, Enemy); // Corrupt Sigil Check
+        cout << "- -BOSS ROUND- -" << "\n\n";
+    }else{
+        cout << "< ROUND: " << WaveRound << " >\n\n";
+    }
+    
+    Enemy.Stat.Block = Enemy.Stat.DEF * Enemy.Multiplier.ACMult;
+    Enemy2.Stat.Block = Enemy2.Stat.DEF * Enemy2.Multiplier.ACMult;
+
+    while (Enemies > 0){
+
+        if (Player.Stat.HP <= 0){//Player Death
+            PlayerDeath(Player, Enemy);
+            if (GameOver == true){
+                return;
+            }
+        }
+
+        if (Target1 == true){
+            PlayerTurnBattlev2(Player, Enemy, Enemy2, Switch);
+        }else{
+            PlayerTurnBattlev2(Player, Enemy2, Enemy, Switch);
+        }
+
+            if (Switch == true){
+                boolswitch(Target1);
+                Switch = false;
+                continue;
+            } 
+
+        if (Enemy.Stat.HP <= 0 && Enemy1Act == true) {//Enemy Death
+            Enemy.Stat.HP = 0;
+            cout << Enemy.Name << " has been slayed." << "\n\n";
+            sleep(1);
+            Target1 = false;
+            Enemy1Act = false;
+            Enemies--;
+        }
+        if (Enemy2.Stat.HP <= 0 && Enemy2Act == true) {//Enemy2 Death
+            Enemy2.Stat.HP = 0;
+            cout << Enemy2.Name << " has been slayed." << "\n\n";
+            sleep(1);
+            Enemy2Act = false;
+            Target1 = true;
+            Enemies--;
+        }
+
+        if (Enemy1Act == true){
+            EnemyTurnBattlev2(Enemy, Enemy2, Player);
+        }
+        if (Enemy2Act == true){
+            EnemyTurnBattlev2(Enemy2, Enemy, Player);
+        }
+
+    }
+    VictoryScreen(Player, Enemy);
+}
+
+
+void BattleKings(Entity& Player){
+
+    Entity K_Aiden = King_Aiden;
+    Entity K_Addison = King_Addison;
+
+    K_Aiden.Misc.Color = "\033[1;93m";
+    K_Addison.Misc.Color = "\033[1;93m";
+
+    int Enemies = 2;
+    bool Enemy1Act = true, Enemy2Act = true, Target1 = true, Switch = false;
+
+        BossWeakeningbyCorruptSigil(Player, K_Aiden);
+        BossWeakeningbyCorruptSigil(Player, K_Addison); // Corrupt Sigil Check
+        cout << "\033[93m< FINAL ROUND >\033[0m" << "\n\n";
+    
+    K_Aiden.Stat.Block = K_Aiden.Stat.DEF * K_Aiden.Multiplier.ACMult;
+    K_Addison.Stat.Block = K_Addison.Stat.DEF * K_Addison.Multiplier.ACMult;
+
+    while (Enemies > 0){
+
+        if (Player.Stat.HP <= 0){//Player Death
+            PlayerDeath(Player, K_Aiden);
+            if (GameOver == true){
+                return;
+            }
+        }
+
+        if (Target1 == true){
+            PlayerTurnBattlev2(Player, K_Aiden, K_Addison, Switch);
+        }else{
+            PlayerTurnBattlev2(Player, K_Addison, K_Aiden, Switch);
+        }
+
+            if (Switch == true){
+                boolswitch(Target1);
+                Switch = false;
+                continue;
+            } 
+
+        if (K_Aiden.Stat.HP <= 0 && Enemy1Act == true) {//Enemy Death
+            K_Aiden.Stat.HP = 0;
+            cout << K_Aiden.Name << " has been slayed." << "\n\n";
+            sleep(2);
+            Target1 = false;
+            Enemy1Act = false;
+            Enemies--;
+            if (Enemy2Act == true){
+            DE_KingsBattleAidenDeath(Player);
+                K_Addison.Stat.MAXHP += 499;
+                K_Addison.Stat.HP += 499;
+                K_Addison.Stat.ATK *= 1.5;
+                K_Addison.Stat.MA *= 1.5;
+                K_Addison.Stat.DEF *= 2;
+                K_Addison.Stat.DODGE+= 5;
+                K_Addison.Misc.Color = "\033[1;95m";
+            }
+        }
+        if (K_Addison.Stat.HP <= 0 && Enemy2Act == true) {//Enemy2 Death
+            K_Addison.Stat.HP = 0;
+            cout << "" << K_Addison.Name << " has been slayed." << "\n\n";
+            sleep(2);
+            Enemy2Act = false;
+            Target1 = true;
+            Enemies--;
+            if (Enemy1Act == true){
+                DE_KingsBattleAddisonDeath(Player);
+                K_Aiden.Stat.MAXHP += 499;
+                K_Aiden.Stat.HP += 499;
+                K_Aiden.Stat.ATK *= 1.5;
+                K_Aiden.Stat.MA *= 1.5;
+                K_Aiden.Stat.DEF *= 2;
+                K_Aiden.Stat.CRIT+= 5;
+                K_Aiden.Misc.Color = "\033[1;95m";
+            }
+        }
+
+        if (Enemy1Act == true){
+            EnemyTurnBattlev2(K_Aiden, K_Addison, Player);
+        }
+        if (Enemy2Act == true){
+            EnemyTurnBattlev2(K_Addison, K_Aiden, Player);
+        }
+
+    }
+
+}
 
 void BattleChampion(Entity& Player){
 
         int ChargeTurns = 5;
+        Entity theChampion = TheChampion;
 
-        BossWeakeningbyCorruptSigil(Player, TheChampion); // Corrupt Sigil Check
-
-        cout << "\033[1;95m< FINAL ROUND >\033[0m\n\n";
+        BossWeakeningbyCorruptSigil(Player, theChampion); // Corrupt Sigil Check
     
-    TheChampion.Stat.DEF = TheChampion.Stat.AC / 2;
+    theChampion.Stat.Block = theChampion.Stat.DEF;
+
     ChampionAppearAnim();
     DE_ChampionBattleBegin(Player);
 
     ChampionIncomingUI();
+    cout << "\033[1;95m< FINAL ROUND >\033[0m\n\n";
     while (true){
 
         if (Player.Stat.HP <= 0){//Player Death
-            GameOver = true;
-            PlayerDeath(Player, TheChampion);
-            return;
+            PlayerDeath(Player, theChampion);
+            if (GameOver == true){
+                return;
+            }
         }
 
-            PlayerTurnBattle(Player, TheChampion);
+            PlayerTurnBattle(Player, theChampion);
 
-        if (TheChampion.Stat.HP <= 0) {//Champion Death
-            TheChampion.Stat.HP = 0;
+        if (theChampion.Stat.HP <= 0) {//Champion Death
+            theChampion.Stat.HP = 0;
             sleep(1);
             ScreenFlash(6);
             DE_ChampionBattleDefeated(Player1);
@@ -2177,11 +2681,11 @@ void BattleChampion(Entity& Player){
             break;
         }
 
-            ChampionTurnBattle(Player, ChargeTurns);
+            ChampionTurnBattle(Player,theChampion, ChargeTurns);
 
     }
     
-    VictoryScreen(Player, TheChampion);
+    //VictoryScreen(Player, TheChampion);
 
 }
 
@@ -2191,25 +2695,27 @@ void BattlePVP(Entity& Player1, Entity& Player2){
     BossWeakeningbyCorruptSigil(Player1, Player2);
     BossWeakeningbyCorruptSigil(Player2, Player1);
     
-    Player2.Stat.DEF = EnemyA.Stat.AC / 2;
+    Player2.Stat.Block = Player2.Stat.DEF * Player2.Multiplier.ACMult;
     goto begin;
 
     while (true){
 
-        if (Player1.Stat.HP <= 0){//Player1 Death
-            GameOver = true;
+        if (Player1.Stat.HP <= 0){//Player Death
             PlayerDeath(Player1, Player2);
-            return;
+            if (GameOver == true){
+                return;
+            }
         }else{PlayerSwitchUI();}
 
         begin:
             PlayerTurnBattle(Player1, Player2);
 
-            if (Player2.Stat.HP <= 0){//Player2 Death
-                GameOver = true;
-                PlayerDeath(Player2, Player1);
+        if (Player1.Stat.HP <= 0){//Player Death
+            PlayerDeath(Player1, Player2);
+            if (GameOver == true){
                 return;
-            }else {PlayerSwitchUI();}
+            }
+        }else{PlayerSwitchUI();}
 
         PlayerTurnBattle(Player2, Player1);
 
@@ -2230,7 +2736,7 @@ enum UpCardID{
     MAXHP = 1,
     ATK = 2,
     MA = 3,
-    AC = 4,
+    DEF = 4,
     CRIT = 5,
     DODGE = 6,
     HEAL = 7
@@ -2268,7 +2774,7 @@ ShopTag Tag1, Tag2, Tag3;
 
 //- Shuffle Time - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 
-                    // SBRN = Stat-Boost-Name-Rank     
+                    // SBRN = Stat-Boost-Name-Rank
 void UPCardClassification(Entity& Player, UpCard& Card, float SBR1, string SBNR1, float SBR2, string SBNR2, float SBR3, string SBNR3, float SBR4, string SBNR4, float SBR5, string SBNR5){
 
     Card.Rank = 1;
@@ -2277,11 +2783,11 @@ void UPCardClassification(Entity& Player, UpCard& Card, float SBR1, string SBNR1
 
     if (Player.Misc.Type == PLAYER1){// Tarot Necklace Check
         if (RlcTarotNecklace.Obtained.P1 == true){
-            PlayerRankChance += 3;
+            PlayerRankChance += 4;
         }
     }else if (Player.Misc.Type == PLAYER2){
         if (RlcTarotNecklace.Obtained.P2 == true){
-            PlayerRankChance += 3;
+            PlayerRankChance += 4;
         }
     }
 
@@ -2343,7 +2849,7 @@ void UPCardRandomizer(Entity& Player, UpCard& Card){
         case 1:
         Card.ID = MAXHP;
         Card.StatName = "\033[1;92mMAXHP\033[0m";
-        UPCardClassification(Player, Card, 2, " + 2 ", 4, " + 4 ", 6, " + 6 ", 8, " + 8 ", 10, "+ 10 ");
+        UPCardClassification(Player, Card, 3, " + 3 ", 6, " + 6 ", 9, " + 9 ", 12, "+ 12 ", 15, "+ 15 ");
         break;
 
         case 2:
@@ -2354,19 +2860,19 @@ void UPCardRandomizer(Entity& Player, UpCard& Card){
 
         case 3:
         Card.ID = MA;
-        Card.StatName = "\033[1;94m  MA \033[0m";
+        Card.StatName = "\033[1;94mMAGIC\033[0m";
         UPCardClassification(Player, Card, 1, " + 1 ", 2, " + 2 ", 3, " + 3 ", 4, " + 4 ", 5, " + 5 ");
         break;
 
         case 4:
-        Card.ID = AC;
-        Card.StatName = "\033[1;90m  AC \033[0m";
-        UPCardClassification(Player, Card, 1, " + 1 ", 2, " + 2 ", 3, " + 3 ", 4, " + 4 ", 5, " + 5 ");
+        Card.ID = DEF;
+        Card.StatName = "\033[1;90m DEF \033[0m";
+        UPCardClassification(Player, Card, 1, " + 1 ", 1.5, "+ 1.5", 2, " + 2 ", 2.5, "+ 2.5", 3, " + 3 ");
         break;
 
         case 5:
         Card.ID = CRIT;
-        Card.StatName = "\033[1;31m CRIT\033[0m";
+        Card.StatName = "\033[1;31mCRIT%\033[0m";
         UPCardClassification(Player, Card, 1, " + 1 ", 1.5, "+ 1.5", 2, " + 2 ", 3, " + 3 ", 3.5, "+ 3.5");
         break;
 
@@ -2411,7 +2917,7 @@ void TagRandomizer(ShopTag& Tag, Entity& Player){
         Tag.UI.Type = "\033[1;93mUpgrade\033[0m";
         Tag.UI.Name = Tag.TagUpgrade.Name;
         Tag.UI.Desc = Tag.TagUpgrade.Desc;
-        Tag.Price = Tag.TagUpgrade.Price * Player.Misc.PriceMult;
+        Tag.Price = Tag.TagUpgrade.Price * Player.Multiplier.PriceMult;
         Tag.UI.Currency = goldshow();
         break;
 
@@ -2420,12 +2926,12 @@ void TagRandomizer(ShopTag& Tag, Entity& Player){
         Tag.UI.Type = "-\033[1;92mItem\033[0m--";
         Tag.UI.Name = Tag.TagItem.Name;
         Tag.UI.Desc = Tag.TagItem.Desc;
-        Tag.Price = Tag.TagItem.Price * Player.Misc.PriceMult;
+        Tag.Price = Tag.TagItem.Price * Player.Multiplier.PriceMult;
         Tag.UI.Currency = goldshow();
         break;
 
         case 3:
-        if (Player.Misc.Spellslots != 0){
+        if (Player.Misc.Spellslots != 0 && Player.Misc.Tokens != 0){
         Tag.ID = SPELL;
         Tag.UI.Type = "-\033[1;94mSpell\033[0m-";
         Tag.UI.Name = Tag.TagSpell.Name;
@@ -2592,6 +3098,7 @@ void SpellSlotPlayerCheck(Entity& Player, Spell& getSpell){
         }else if (Player.SpellBag.Spell6.ID == NOSPELL){
             Player.SpellBag.Spell6 = getSpell;
         }
+        Player.Misc.Spellslots--;
     }  
 }
 
@@ -2602,20 +3109,20 @@ void UpgradeTagBought(ShopTag& Tag, Entity& Player){
     if (randomval == 3){// 5% chance for slightly better upgrade and different message
         switch (Tag.TagUpgrade.ID){
             case CONSTITUTION:
-            UpgradeEffectint(Player, Player.Stat.MAXHP, Player.Stat.MAXHP * 0.25, 12, "      You are Invincible      ", "MAXHP");
+            UpgradeEffectint(Player, Player.Stat.MAXHP, Player.Stat.MAXHP * 0.15, 18, "      You are Invincible      ", "MAXHP");
             Player.Stat.HP += 12;
             break;
 
             case SHARPENING:
-            UpgradeEffectfloat(Player, Player.Stat.ATK, Player.Stat.ATK * 0.25, 6, "   Your Sword looks Fierce    ", " ATK ");
+            UpgradeEffectfloat(Player, Player.Stat.ATK, Player.Stat.ATK * 0.15, 6, "   Your Sword looks Fierce    ", " ATK ");
             break;
 
             case ARCBURST:
-            UpgradeEffectfloat(Player, Player.Stat.MA, Player.Stat.MA * 0.25, 6, "The means whom all is revealed", "  MA ");
+            UpgradeEffectfloat(Player, Player.Stat.MA, Player.Stat.MA * 0.15, 6, "The means whom all is revealed", "MAGIC");
             break;
 
             case ARMORUP:
-            UpgradeEffectfloat(Player, Player.Stat.AC, Player.Stat.AC * 0.25, 6, "Hey nice armor pal, very shiny", "  AC ");
+            UpgradeEffectfloat(Player, Player.Stat.DEF, Player.Stat.DEF * 0.15, 4, "Nice armor Warrior, very shiny", " DEF ");
             break;
 
             case SLEIGHTOFHAND:
@@ -2643,31 +3150,35 @@ void UpgradeTagBought(ShopTag& Tag, Entity& Player){
             break;
 
             case LUCKYCLOVER:
-            UpgradeEffectPercent(Player, Player.Misc.XPMult, 0.10, 0, "It's actually a 5-leaf clover!", "XP Gain");
+            UpgradeEffectPercent(Player, Player.Multiplier.XPMult, 0.15, 0, "It's actually a 5-leaf clover!", "XP Gain");
             break;
 
             case ETHEREAL:
             UpgradeEffectint(Player, Player.Stat.MAXMANA, 5, 0, " You could say it's over 9000 ", " MANA");
             Player.Stat.MANA += 5;
             break;
+
+            case STOKEN:
+            UpgradeEffectint(Player, Player.Misc.Tokens, 2, 0, "        Keep the Change       ", "Tokens");
+            break;
         }
     }else{// Normal upgrades
         switch (Tag.TagUpgrade.ID){
             case CONSTITUTION:
-            UpgradeEffectint(Player, Player.Stat.MAXHP, Player.Stat.MAXHP * 0.20, 10, " You feel Tougher than before ", "MAXHP");
-            Player.Stat.HP += 10;
+            UpgradeEffectint(Player, Player.Stat.MAXHP, Player.Stat.MAXHP * 0.10, 15, " You feel Tougher than before ", "MAXHP");
+            Player.Stat.HP += 15;
             break;
 
             case SHARPENING:
-            UpgradeEffectfloat(Player, Player.Stat.ATK, Player.Stat.ATK * 0.20, 5, "   Your Sword looks Sharper   ", " ATK ");
+            UpgradeEffectfloat(Player, Player.Stat.ATK, Player.Stat.ATK * 0.10, 5, "   Your Sword looks Sharper   ", " ATK ");
             break;
 
             case ARCBURST:
-            UpgradeEffectfloat(Player, Player.Stat.MA, Player.Stat.MA * 0.20, 5, "   Your Arcana is Revealed    ", "  MA ");
+            UpgradeEffectfloat(Player, Player.Stat.MA, Player.Stat.MA * 0.10, 5, "   Your Arcana is Revealed    ", "MAGIC");
             break;
 
             case ARMORUP:
-            UpgradeEffectfloat(Player, Player.Stat.AC, Player.Stat.AC * 0.20, 5, "   Your Armor is... Shinier   ", "  AC ");
+            UpgradeEffectfloat(Player, Player.Stat.DEF, Player.Stat.DEF * 0.10, 3, "   Your Armor is... Shinier   ", " DEF ");
             break;
 
             case SLEIGHTOFHAND:
@@ -2694,12 +3205,16 @@ void UpgradeTagBought(ShopTag& Tag, Entity& Player){
             break;
 
             case LUCKYCLOVER:
-            UpgradeEffectPercent(Player, Player.Misc.XPMult, 0.05, 0, "        You feel Lucky!       ", "XP Gain");
+            UpgradeEffectPercent(Player, Player.Multiplier.XPMult, 0.10, 0, "        You feel Lucky!       ", "XP Gain");
             break;
 
             case ETHEREAL:
             UpgradeEffectint(Player, Player.Stat.MAXMANA, 3, 0, " You feel calm and collected  ", " MANA");
             Player.Stat.MANA += 3;
+            break;
+
+            case STOKEN:
+            UpgradeEffectint(Player, Player.Misc.Tokens, 1, 0, "     Endless Possibilities    ", "Tokens");
             break;
         }
     }
@@ -2712,7 +3227,7 @@ void TagBought(Entity& Player, ShopTag& Tag){
     if (Tag.SoldOut == true){// Sold Out
         cout << "It's sold out, ";
         sleep(1);
-        cout << "bucko.";
+        cout << "youngster.";
         sleep(1);
         return;
     }
@@ -2722,7 +3237,7 @@ void TagBought(Entity& Player, ShopTag& Tag){
         if (Player.Stat.Gold < Tag.Price){// Not enough Gold
             cout << "Not enough gold, ";
             sleep(1);
-            cout << "mate.";
+            cout << "warrior.";
             sleep(1);
             return;
         }
@@ -2733,14 +3248,14 @@ void TagBought(Entity& Player, ShopTag& Tag){
         if (Player.Stat.Gold < Tag.Price){// Not enough Gold
             cout << "Not enough gold, ";
             sleep(1);
-            cout << "mate.";
+            cout << "warrior.";
             sleep(1);
             return;
         }
         if (Player.Misc.Itemslots == 0){// Not enough Item Slots
             cout << "No space left, ";
             sleep(1);
-            cout << "pal.";
+            cout << "sell to free up.";
             sleep(1);
             return;
         }
@@ -2748,10 +3263,10 @@ void TagBought(Entity& Player, ShopTag& Tag){
         break;
 
         case SPELL:
-        if (Player.Misc.Spellslots == 0){// Not enough Tokens/SpellSlots
-            cout << "No more Tokens left, ";
+        if (Player.Misc.Tokens < Tag.Price){// Not enough Tokens/SpellSlots
+            cout << "Noy enough Tokens, ";
             sleep(1);
-            cout << "mano.";
+            cout << "warrior.";
             sleep(1);
             return;
         }
@@ -2762,7 +3277,7 @@ void TagBought(Entity& Player, ShopTag& Tag){
     if (Tag.UI.Currency == goldshow()){
         Player.Stat.Gold -= Tag.Price;
     }else{
-        Player.Misc.Spellslots -= Tag.Price;
+        Player.Misc.Tokens -= Tag.Price;
     }
     
     Tag.SoldOut = true;
@@ -2784,8 +3299,8 @@ void UPCardEffect(Entity& Player, UpCard& Card){
         Player.Stat.MA += Card.StatBoost;
         break;
 
-        case AC:
-        Player.Stat.AC += Card.StatBoost;
+        case DEF:
+        Player.Stat.DEF += Card.StatBoost;
         break;
 
         case CRIT:
@@ -2911,7 +3426,7 @@ void ShuffleTimeUI(Entity& Player, int& RerollPrice){
     cout << " +-----------+    UP Cards:                                      " <<                                                          "+-------------+" << endl;
     cout << " | 7 - "<<Yellow("Sell")<<"  |       .-------.     .-------.     .-------.       " <<                                          " Savings: " << Player.Stat.Gold << goldshow() << endl;
     cout << " +-----------+       | " << Card1.StatName << " |     | " << Card2.StatName << " |     | " << Card3.StatName << " |      "<<  " +-------------+" << endl;
-    cout << " | 8 - Stats |       | " << Card1.BoostShow << " |     | " << Card2.BoostShow << " |     | " << Card3.BoostShow << " |          " << tokensshow() << ": " << Player.Misc.Spellslots << endl;
+    cout << " | 8 - Stats |       | " << Card1.BoostShow << " |     | " << Card2.BoostShow << " |     | " << Card3.BoostShow << " |          " << tokensshow() << ": " << Player.Misc.Tokens << endl;
     cout << " +-----------+       |       |     |       |     |       |       " <<                                                          "+-------------+" << endl;
     cout << " |9 - Options|       |Rnk:" << Card1.RankShow << "|     |Rnk:" << Card2.RankShow << "|     |Rnk:" << Card3.RankShow << "|                       " << endl;
     cout << " +-----------+       `-------`     `-------`     `-------`     (0) - " << Green("Reroll") << " - " << RerollPrice << goldshow() << endl;
@@ -3025,11 +3540,11 @@ void ShuffleTime(Entity& Player){
     //Prison Talk Events - - - - - - - - - - - - - - - - - - - - - - - -||
     void PrisonEvent1(Entity& Player){//DONE
 
-        int SpecATK = Player.Stat.ATK/3;
-        int SpecMAXHP = Player.Stat.MAXHP/2.5;
-        int SpecAC = Player.Stat.AC/2;
+        int SpecATK = Player.Stat.ATK/4;
+        int SpecMAXHP = Player.Stat.MAXHP/2.2;
+        int SpecDEF = Player.Stat.DEF/2;
 
-        Entity PrisonerBad(SpecMAXHP,10,SpecATK,5,SpecAC,0,35,5,ENEMY, "Prisoner");
+        Entity PrisonerBad(SpecMAXHP,10,SpecATK,5,SpecDEF,0,35,5,ENEMY, "Prisoner");
 
     Dialogue(Player, Hero, Prisoner, false, "Hello there buddy","","",0);
     Dialogue(Player, Hero, Prisoner, true, "May I ask what made you end up in this cell?","","",0);
@@ -3042,9 +3557,10 @@ void ShuffleTime(Entity& Player){
         Battle(Player, PrisonerBad);
         Player.Stat.Kindness += 3;
         Player.Stat.Gold += 10;
+        Player.Misc.Tokens++;
         Dialogue(Player, Hero, Nochar, true, "That was sudden...","","",0);
         Dialogue(Player, Hero, Nochar, true, "Looks like he dropped some extra \033[93mMoolah\033[0m at least...","","",0);
-        Dialogue(Player, Hero, Nochar, true, "\033[90m(Looks like you got an extra \033[93m10g\033[0m)","","",0);
+        Dialogue(Player, Hero, Nochar, true, "\033[90m(You got an extra \033[93m10g\033[0m and \033[95m+1 Token\033[0m)","","",0);
         Dialogue(Player, Hero, Nochar, true, "\033[90m(You walked away, back to the Arena)","","",0);
         break;
 
@@ -3284,11 +3800,13 @@ void ShuffleTime(Entity& Player){
 
     PrisonLoreCheck = true;
     Player.Stat.Kindness += 6;
-    UpgradeEffectPercent(Player, Player.Misc.XPMult, 0.05, 0, "        You feel Lucky!       ", "XP Gain");
+    Player.Multiplier.PriceMult -= 0.1;
+    UpgradeEffectPercent(Player, Player.Multiplier.XPMult, 0.10, 0, "        You feel Lucky!       ", "XP Gain");
     UpgradeEffectPercent(Player, Player.Stat.CRITMULT, 0.2, 0, " Your Patience is running out ", "CritDmg");
     UpgradeEffectint(Player, Player.Stat.MAXMANA, 3, 0, " You feel calm and collected  ", " MANA");
 
-    Dialogue(Player, Hero, Witch, true, "Thank you Witch","This will prove useful","",0);
+    Dialogue(Player, Hero, Witch, false, "I will also \033[93mdecrease the Shop Prices by 10%\033[0m","I guess I'm in a modest mood","",0);
+    Dialogue(Player, Hero, Witch, true, "Thank you Witch","This will prove very useful","",0);
     Dialogue(Player, Hero, Witch_down, false, "Now now, enough with the flatery and joy","The Arena is up ahead","Goodluck Warrior",0);
 }
     void PrisonEvent4(Entity& Player){//Done
@@ -3304,11 +3822,11 @@ void ShuffleTime(Entity& Player){
     switch(Chance){
         case 1:
         Player.Stat.Kindness += 3;
-        Player.Misc.DefMana += 0.1;
+        Player.Multiplier.ManaMult = 0.1;
         Dialogue(Player, Hero, Prisoner, false, "Let me seee...","","",0);
         Dialogue(Player, Hero, Prisoner, true, "\033[90m(It looks like the craftsman is adding something to it)\033[0m","\033[90m(Probably with those illegal materials...)\033[0m","",0);
-        Dialogue(Player, Hero, Prisoner, false, "There,","Your shield should produce more \033[94mEnergy\033[0m when you defend with it","",0);
-        Dialogue(Player, Hero, Prisoner, true, "\033[90m(When you use DEFEND, you will now recover an additional 10% of " + manashow() + "\033[90m)\033[0m","","",0);
+        Dialogue(Player, Hero, Prisoner, false, "There,","Your shield should produce more \033[94mEnergy\033[0m overall, including when you defend with it","",0);
+        Dialogue(Player, Hero, Prisoner, true, "\033[90m(You can now recover an additional 10% of " + manashow() + "\033[90m)\033[0m","","",0);
         Dialogue(Player, Hero, Prisoner, true, "This will prove quite useful in battle","You have my gratitude Craftsman","",0);
         Dialogue(Player, Hero, Prisoner, false, "Heh heh,","Glad I could be useful","",0);
         break;
@@ -3380,7 +3898,7 @@ void ShuffleTime(Entity& Player){
     switch(Chance){
         case 1:
         Player.Stat.Kindness += 3;
-        Player.Misc.DefMult += 1;
+        Player.Multiplier.DefMult += 1;
 
         Dialogue(Player, Hero, Prisoner, false, "Aha!","I knew you would want to reinforce the shield!","",0);
         Dialogue(Player, Hero, Prisoner, true, "\033[90m(He reinforces the Shield with passion and love, making it even more sturdy!)\033[0m","\033[90m(When you use \033[93mDefend\033[90m, the damage will be further decreased!)\033[0m","",0);
@@ -3665,11 +4183,158 @@ void CellRest(Entity& Player){
     clear();
 }
 
-void CellTimeUI(int floor, int wave){
+string WeaponUpgradeMenuInfoUI(float Multiplier, float increase){
+    //100%  ->  110%      0%  ->  5%
+    int Spaces1 = 0, Spaces2 = 0;
+    if (Multiplier < 0.10){
+        Spaces1 += 2;
+    }else if(Multiplier < 1){
+        Spaces1++;
+    }
+
+    if (Multiplier + increase < 0.10){
+        Spaces2 += 2;
+    }else if(Multiplier + increase < 1){
+        Spaces2++;
+    }
+
+    cout << "\033[4m" << Multiplier*100 << "%\033[0m";
+    for (int l = 0; l < Spaces1; l++){
+        cout << " ";
+    }
+    cout << "  ->  \033[1;4;93m" << (Multiplier+increase)*100 << "%\033[0m";
+
+    for (int l = 0; l < Spaces2; l++){
+        cout << " ";
+    }
+    return "";
+}
+void WeaponUpgradeMenuUI(Entity& Player,bool Side){
+    clear();
+    if (Side == true){
+    cout << "\033[91m         -   -  -  -  - - - - -----WEAPON UPGRADES----- - - - -  -  -  -   -       \033[0m" << endl;
+    cout << "                                   _______________                                 " << endl;
+    cout << "               _______            |\033[91m      ___      \033[0m|                                " << endl;
+    cout << "              | \033[91mBack\033[0m  |           |\033[91m     / \033[0m_ \033[91m\\     \033[0m|                                " << endl;
+    cout << "              |__(0)__|           |\033[91m    / \033[0m/ \\\033[91m \\    \033[0m|                                " << endl;
+    cout << "               _|___|_            |\033[91m   / \033[0m/   \\\033[91m \\   \033[0m|                                " << endl;
+    cout << "              | Stats |           |\033[91m  / \033[0m/_____\\\033[91m \\  \033[0m|                                " << endl;
+    cout << "              |__(4)__|           |\033[91m |___________| \033[0m|                                  " << endl;
+    cout << "                                  |_______________|          "<<tokensshow()<<": "<<Player.Misc.Tokens<< endl;
+    cout << "          __________________________|___________|__________________________        " << endl;
+    cout << "         |          |                |                          |          |       " << endl;
+    cout << "         | \033[91mStrenght\033[0m | +10%  \033[91mATKMult\033[0m  |  ATKMult  "<<WeaponUpgradeMenuInfoUI(Player.Multiplier.ATKMult,0.10)<<" |  1 \033[95mToken\033[0m |       " << endl;
+    cout << "         |__________|________________|__________________________|__________|       " << endl;
+    cout << "            |                       |____(1)____|                       |          " << endl;
+    cout << "          __|___________________________________________________________|__     (9) ->" << endl;
+    cout << "         |          |                |                          |          |  \033[1;4;94mShield\033[0m" << endl;
+    cout << "         |  \033[94mArcana\033[0m  | +10% \033[94mMAGICMult\033[0m | MAGICMult "<<WeaponUpgradeMenuInfoUI(Player.Multiplier.MAGICMult,0.10)<<" |  1 \033[95mToken\033[0m |       " << endl;
+    cout << "         |__________|________________|__________________________|__________|       " << endl;
+    cout << "            |                       |____(2)____|                       |          " << endl;
+    cout << "          __|___________________________________________________________|__        " << endl;
+    cout << "         |          |                |                          |          |       " << endl;
+    cout << "         |   \033[93mGreed\033[0m  | +10% \033[93mGold Gain\033[0m | Gold Gain "<<WeaponUpgradeMenuInfoUI(Player.Multiplier.GoldMult,0.10)<<" |  1 \033[95mToken\033[0m |       " << endl;
+    cout << "         |__________|________________|__________________________|__________|       " << endl;
+    cout << "                                    |____(3)____|                                  " << "\n\n";
+    }else{
+    cout << "\033[94m         -   -  -  -  - - - - -----SHIELD UPGRADES----- - - - -  -  -  -   -       \033[0m" << endl;
+    cout << "                                   _______________                                 " << endl;
+    cout << "               _______            |  ___________  |                                " << endl;
+    cout << "              | \033[94mBack\033[0m  |           | | \033[94m _______  \033[0m| |                                " << endl;
+    cout << "              |__(0)__|           |  \\\033[94m \\     /\033[0m /  |                                " << endl;
+    cout << "               _|___|_            |   \\\033[94m \\   /\033[0m /   |                                " << endl;
+    cout << "              | Stats |           |    \\\033[94m \\_/\033[0m /    |                                " << endl;
+    cout << "              |__(4)__|           |     \\___/     |                                 " << endl;
+    cout << "                                  |_______________|          "<<tokensshow()<<": "<<Player.Misc.Tokens<< endl;
+    cout << "          __________________________|___________|__________________________        " << endl;
+    cout << "         |          |                |                          |          |       " << endl;
+    cout << "         |\033[90mProtection\033[0m| +10%  \033[90mDEFMult\033[0m  |  DEFMult  "<<WeaponUpgradeMenuInfoUI(Player.Multiplier.ACMult,0.10)<<" |  1 \033[95mToken\033[0m |       " << endl;
+    cout << "         |__________|________________|__________________________|__________|       " << endl;
+    cout << "            |                       |____(1)____|                       |          " << endl;
+    cout << "<- (9)    __|___________________________________________________________|__        " << endl;
+    cout << "  \033[1;4;91mWeapon\033[0m |          |                |                          |          |       " << endl;
+    cout << "         | \033[96mDefiance\033[0m | +50% \033[96mBlockMult\033[0m | BlockMult "<<WeaponUpgradeMenuInfoUI(Player.Multiplier.DefMult,0.50)<<" |  1 \033[95mToken\033[0m |       " << endl;
+    cout << "         |__________|________________|__________________________|__________|       " << endl;
+    cout << "            |                       |____(2)____|                       |          " << endl;
+    cout << "          __|___________________________________________________________|__        " << endl;
+    cout << "         |          |                |                          |          |       " << endl;
+    cout << "         |  \033[94mEnergy\033[0m  | +5%  \033[94mManaMult \033[0m | ManaMult  "<<WeaponUpgradeMenuInfoUI(Player.Multiplier.ManaMult,0.05)<<" |  1 \033[95mToken\033[0m |       " << endl;
+    cout << "         |__________|________________|__________________________|__________|       " << endl;
+    cout << "                                    |____(3)____|                                  " << "\n\n";
+    }
+}
+void WeaponUpgradeBought(Entity& Player, float& Stat, float increase, int price){
+    if (Player.Misc.Tokens >= price){
+        Stat += increase;
+        Player.Misc.Tokens -= price;
+    }else{
+        cout << "Not enough Tokens";
+        usleep(700000);
+    }
+}
+void WeaponUpgradeMenu(Entity& Player){
+
+    const int Price = 1;
+    int Action;
+    bool Side = true;
+
+    while(true){
+
+        WeaponUpgradeMenuUI(Player,Side);
+
+        cout << Player.Name << ": ";
+        PlayerInput(Action);
+
+        switch(Action){
+            case 0:
+            return;
+            break;
+
+            case 1:
+            if (Side == true){
+                WeaponUpgradeBought(Player,Player.Multiplier.ATKMult,0.10,Price);
+            }else{
+                WeaponUpgradeBought(Player,Player.Multiplier.ACMult,0.10,Price);
+            }
+            break;
+
+            case 2:
+            if (Side == true){
+                WeaponUpgradeBought(Player,Player.Multiplier.MAGICMult,0.10,Price);
+            }else{
+                WeaponUpgradeBought(Player,Player.Multiplier.DefMult,0.50,Price);
+            }
+            break;
+
+            case 3:
+            if (Side == true){
+                WeaponUpgradeBought(Player,Player.Multiplier.GoldMult,0.10,Price);
+            }else{
+                WeaponUpgradeBought(Player,Player.Multiplier.ManaMult,0.05,Price);
+            }
+            break;
+
+            case 4:
+            StatMenu(Player);
+            break;
+
+            case 9:
+            boolswitch(Side);
+            break;
+
+            default:
+            cout << "Invalid";
+            usleep(250000);
+            break;
+        }
+    }
+}
+
+void CellTimeUI(int floor, int wave, int keywave){
     if (floor == 0){
-        if (wave > 3){
+        if (wave > keywave){
             cout << "\033[90m|----|----|----|----|----|----|----|----|----|----|----|----|----+----+----+----+----+----+----|\033[0m" << endl;
-            cout << "\033[90m     |    |    |    |    |    |    |    |\033[1;37m  - -CELL- -\033[0;90m  |    |    | \033[1;37m 4 -> Stats \033[0;90m |\033[1;37m 5 -> Options  " << endl;
+            cout << "\033[90m     |    |    |    |    |    |    |    |\033[1;37m  - -CELL- -\033[0;90m  |    |    | \033[1;37m 5 -> Stats \033[0;90m |\033[1;37m 6 -> Options  " << endl;
             cout << "\033[0;90m|----|----|----|----|----|----|----|----|----|----|----|----|----+----+----+----+----+----+----|" << endl;
             cout << "\033[90m|         |    |         |         |    |    |              |    |         |    |         |    |" << endl;
             cout << "\033[90m|     What would you like to do?        |    |                             |                   |" << endl;
@@ -3685,14 +4350,16 @@ void CellTimeUI(int floor, int wave){
             cout << "     \033[47m_________________\033[0m                  Z                 .:/.|.                 '  | |  |      " << endl;
             cout << "    /      '''''      \\                             _.-'-'  ' ' '-.__                 '  |      " << endl;
             cout << "    \033[47m___________________\033[0m\033[90m          [Full Heal]        [Gets you a Shop]    [Talk with Prisoners]  \033[0m" << endl;
-            cout << "\033[90m|\033[0m           (0)                      (1)                   (2)                    (3)         \033[90m |" << endl;
+            cout << " \033[0m           (0)                      (1)                   (2)                    (3)          " << "\n\n";
+
+            cout << "                      (4) - \033[91mSTRENGHTEN WEAPON\033[0m (No icon yet cuz I'm lazy)              \033[90m" << endl;
             cout << "|    |                        |                        |         |                             |" << endl;
             cout << "|    |    |              |    |         |              |         |    |         |    |         |" << endl;
             cout << "|    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |" << endl;
             cout << "|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|\033[0m" << "\n\n";
         }else{
             cout << "\033[90m|----|----|----|----|----|----|----|----|----|----|----|----|----+----+----+----+----+----+----|\033[0m" << endl;
-            cout << "\033[90m     |    |    |    |    |    |    |    |\033[1;37m  - -CELL- -\033[0;90m  |    |    | \033[1;37m 4 -> Stats \033[0;90m |\033[1;37m 5 -> Options  " << endl;
+            cout << "\033[90m     |    |    |    |    |    |    |    |\033[1;37m  - -CELL- -\033[0;90m  |    |    | \033[1;37m 5 -> Stats \033[0;90m |\033[1;37m 6 -> Options  " << endl;
             cout << "\033[0;90m|----|----|----|----|----|----|----|----|----|----|----|----|----+----+----+----+----+----+----|" << endl;
             cout << "|         |    |         |         |    |    |              |    |         |    |         |    |" << endl;
             cout << "|     What would you like to do?        |    |                             |                   |" << endl;
@@ -3708,7 +4375,9 @@ void CellTimeUI(int floor, int wave){
             cout << "    |_________________|                 Z                 .:/.|.                 '  | |  |      " << endl;
             cout << "    /_________________\\                             _.-'-'  ' ' '-.__                 '  |      " << endl;
             cout << "   |___________________| \033[90m        [Full Heal]        [Gets you a Shop]    [Talk with Prisoners]  \033[0m" << endl;
-            cout << "\033[90m|      Does Nothing? \033[0m                (1)                   (2)                    (3)         \033[90m |" << endl;
+            cout << "       Does Nothing? \033[0m                (1)                   (2)                    (3)          " << "\n\n";
+
+            cout << "                      (4) - \033[91mSTRENGHTEN WEAPON\033[0m (No icon yet cuz I'm lazy)              \033[90m" << endl;
             cout << "|    |                        |                        |         |                             |" << endl;
             cout << "|    |    |              |    |         |              |         |    |         |    |         |" << endl;
             cout << "|    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |" << endl;
@@ -3748,12 +4417,13 @@ void CellTimeUI(int floor, int wave){
 void CellTime(Entity& Player){
 
     int Action;
+    int KeyWave = 99;//Wave to be able to move up a Floor (Should start after Wave 3)
     bool validchoice = false;
 
 
     while(true){
 
-        CellTimeUI(Floor, Wave);
+        CellTimeUI(Floor, Wave, KeyWave);
 
 
         cout << Player.Name << ": ";
@@ -3761,12 +4431,16 @@ void CellTime(Entity& Player){
 
         switch (Action){
             case 0:
-            if (Wave > 3){
+            if (Wave > KeyWave){
                 Floor++;
                 validchoice = true;
             }else{
                 goto invalid;
             }
+            break;
+
+            case 4:
+            WeaponUpgradeMenu(Player);
             break;
 
             case 1:
@@ -3789,11 +4463,11 @@ void CellTime(Entity& Player){
             validchoice = true;
             break;
 
-            case 4:
+            case 5:
             StatMenu(Player);
             break;
 
-            case 5:
+            case 6:
             Options();
             break;
 
@@ -3820,49 +4494,118 @@ void CellTime(Entity& Player){
 
 //--CLASSES-------------------------------------------------------------------------------------------------------------------------------------------------------------------------||
 
+void PlayerNaming(Entity& Player){
+
+    string input;
+    int Action;
+    bool Valid = false;
+
+    while (Valid == false){
+        clear();
+        cout << "\n\n\n\n\n\n";
+        cout << "\t\t"  << "  +-------------------------------+   " << endl;
+        cout << "\t\t"  << "  |       What's your name?       |   " << endl;
+        cout << "\t\t"  << "  +-------------------------------+   " << endl;
+        cout << "\t\t"  << "                                     " << endl;
+        cout << "\t\t"  << "                                     " << endl;
+        cout << "\t\t"  << "                                     " << endl;
+        cout << "\t\t"  << "    _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    " << endl;
+    cout <<"\t\t"<<"\033[90m       (The limit is 15 digits)      \033[0m" << endl;
+        cout << "\t\t"  << "                                     " << "\n\n";
+
+        cout << "You: ";
+        getline(cin,input);
+
+        if (size(input) > 15){
+            cout << "That's above the limit";
+            usleep(500000);
+            continue;
+        }else if(input == " "){
+            cout << "No one has an empty name";
+            usleep(500000);
+            continue;
+        }
+        confirmation:
+        clear();
+        cout << "\t\t"  << "\n\n\n\n\n\n";
+        cout << "\t\t"  << "  +-------------------------------+   " << endl;
+        cout << "\t\t"  << "  |      Is this your name?       |   " << endl;
+        cout << "\t\t"  << "  +-------------------------------+   " << endl;
+        cout << "\t\t"  << "                                     " << endl;
+        cout << "\t\t"  << "                                     " << endl;
+        cout << "\t\t"  << "                                     " << endl << "\t\t";
+        for(int l = 0; l < 18 - (size(input)/2);l++){
+            cout << " ";
+        }
+        cout << input << endl;
+        cout << "\t\t"  << "                                  " << endl;
+        cout << "\t\t"  << "    (1 - Yes)            (0 - No) " << "\n\n";
+        cout << "\t\t"  << "You: ";
+
+        PlayerInput(Action);
+        switch (Action){
+            case 0:
+            continue;
+            break;
+
+            case 1:
+            Player.Name = input;
+            Player.Misc.NameLenght = size(input);
+            Valid = true;
+            break;
+
+            default:
+            goto confirmation;
+            break;
+        }
+    }
+}
+
 void ClassMenuUI(){
     cout << "           {-.-'-.-'-.-'-.-'-.'-.-'-.-'-.-'-.-'-.-'-.-\033[1;37mCLASSES\033[0m-.-'-.-'-.-'-.-'-.'-.-'-.-'-.-'-.-'-.-'-.-}" << "\n\n";
 
     cout << " .-----------------------.    .-----------------------.    .-----------------------.    .-----------------------. " << endl;
     cout << "/  \033[93m*,*,\033[1;33mThe Gladiator\033[0;93m,*,*\033[0m  \\  /  \033[1;96m~~~~\033[94mThe Wanderer\033[96m~~~~\033[0m   \\  /  \033[1;90m^<>^\033[91mThe Berserker\033[90m^<>^\033[0m  \\  / \033[35m#-#\033[1;90mThe Black Knight\033[0;35m#-#\033[0m  \\" << endl;
     cout << "| _______________________ |  | _______________________ |  | _______________________ |  | _______________________ |" << endl;
-    cout << "||  \033[1;37mHP\033[0m: 28    \033[1;37mMana\033[0m: 20   ||  ||  \033[1;37mHP\033[0m: 24    \033[1;37mMana\033[0m: 25   ||  ||  \033[1;37mHP\033[0m: 32    \033[1;37mMana\033[0m: 15   ||  ||  \033[1;37mHP\033[0m: 40    \033[1;37mMana\033[0m: 20   ||" << endl;
+    cout << "||  \033[1;37mHP\033[0m: 28    \033[1;37mMana\033[0m: 20   ||  ||  \033[1;37mHP\033[0m: 24    \033[1;37mMana\033[0m: 25   ||  ||  \033[1;37mHP\033[0m: 32    \033[1;37mMana\033[0m: 12   ||  ||  \033[1;37mHP\033[0m: 40    \033[1;37mMana\033[0m: 20   ||" << endl;
     cout << "||            \033[1;37mGold\033[0m: 9" << goldshow() << "   ||  ||            \033[1;37mGold\033[0m: 16" << goldshow() << "  ||  ||            \033[1;37mGold\033[0m: 9" << goldshow() << "   ||  ||            \033[1;37mGold\033[0m: 5" << goldshow() << "   ||" << endl;
-    cout << "||  \033[1;37mATK\033[0m: 6               ||  ||  \033[1;37mATK\033[0m: 4               ||  ||  \033[1;37mATK\033[0m: 12              ||  ||  \033[1;37mATK\033[0m: 8               ||" << endl;
-    cout << "||   \033[1;37mMA\033[0m: 6               ||  ||   \033[1;37mMA\033[0m: 12              ||  ||   \033[1;37mMA\033[0m: 4               ||  ||   \033[1;37mMA\033[0m: 8               ||" << endl;
-    cout << "||   \033[1;37mAC\033[0m: 8               ||  ||   \033[1;37mAC\033[0m: 4               ||  ||   \033[1;37mAC\033[0m: 4               ||  ||   \033[1;37mAC\033[0m: 6               ||" << endl;
+    cout << "||  \033[1;37mATK\033[0m: 8               ||  ||  \033[1;37mATK\033[0m: 4               ||  ||  \033[1;37mATK\033[0m: 12              ||  ||  \033[1;37mATK\033[0m: 10              ||" << endl;
+    cout << "||\033[1;37mMAGIC\033[0m: 6               ||  ||\033[1;37mMAGIC\033[0m: 12              ||  ||\033[1;37mMAGIC\033[0m: 4               ||  ||\033[1;37mMAGIC\033[0m: 8               ||" << endl;
+    cout << "||  \033[1;37mDEF\033[0m: 8               ||  ||  \033[1;37mDEF\033[0m: 4               ||  ||  \033[1;37mDEF\033[0m: 4               ||  ||  \033[1;37mDEF\033[0m: 6               ||" << endl;
     cout << "||\033[1;37mCRIT\033[0m%: 5%   \033[1;37mDODGE\033[0m%: 10%||  ||\033[1;37mCRIT\033[0m%: 5%   \033[1;37mDODGE\033[0m%: 5% ||  ||\033[1;37mCRIT\033[0m%: 10%   \033[1;37mDODGE\033[0m%: 5%||  ||\033[1;37mCRIT\033[0m%: 0%   \033[1;37mDODGE\033[0m%: 0% ||" << endl;
     cout << "||                       ||  ||                       ||  ||                       ||  ||                       ||" << endl;
     cout << "||\033[1;92mItem\033[0m: Flurry Coat      ||  ||\033[1;92mItem\033[0m: Cursed Dice      ||  ||\033[1;92mItem\033[0m: Explosive Jar    ||  ||\033[1;92mItem\033[0m: Voodoo Doll      ||" << endl;
     cout << "||\033[1;94mSpell\033[0m: Duo Slash       ||  ||\033[1;94mSpell\033[0m: Magica Blast    ||  ||\033[1;94mSpell\033[0m: Tempered Cut    ||  ||\033[1;94mSpell\033[0m: Knight's Stance ||" << endl;
     cout << "||                       ||  ||                       ||  ||                       ||  ||                       ||" << endl;
-    cout << "||\033[1;93mBoon\033[0m: Earn +10% XP     ||  ||\033[1;93mBoon\033[0m: Restore more Mana||  ||\033[1;93mBoon\033[0m: +50% CritDamage  ||  ||\033[1;93mBoon\033[0m: Gain +10% Gold   ||" << endl;
-    cout << "||\033[1;95mCurse\033[0m: None            ||  ||\033[1;95mCurse\033[0m: Gain -10% XP    ||  ||\033[1;95mCurse\033[0m: -1 Spell Token  ||  ||\033[1;95mCurse\033[0m: No Defend Mana  ||" << endl;
+    cout << "||\033[1;93mBoon\033[0m: Earn +10% XP     ||  ||\033[1;93mBoon\033[0m: Restore +10% Mana||  ||\033[1;93mBoon\033[0m: +50% CritDamage  ||  ||\033[1;93mBoon\033[0m: Gain +20% Gold   ||" << endl;
+    cout << "||\033[1;95mCurse\033[0m: None            ||  ||\033[1;95mCurse\033[0m: +10% Shop Price ||  ||\033[1;95mCurse\033[0m: -1 Spell Token  ||  ||\033[1;95mCurse\033[0m: -50% BlockMult  ||" << endl;
     cout << "\\'-----------------------'/  \\'-----------------------'/  \\'-----------------------'/  \\'-----------------------'/" << endl;
     cout << " '-----------------------'    '-----------------------'    '-----------------------'    '-----------------------' " << endl;
     cout << "            (1)                          (2)                          (3)                          (4)            " << "\n\n";
 }
 
-void ClassClassification(Entity& Player,Classes classchoice,int maxhp,int maxmana,float atk,float ma,float ac,float crit,float dodge,int gold,int tokens,Item classitem,Spell classspell,float critmult,float xpmult,float manamult,float goldmult, float defmult, float defmana){
+void ClassClassification(Entity& Player,Classes classchoice,int maxhp,int maxmana,float atk,float ma,float def,float crit,float dodge,int gold,int tokens,Item classitem,Spell classspell,float critmult,float xpmult,float manamult,float goldmult, float defmult, float pricemult){
     Player.Misc.Class = classchoice;
     
     Player.Stat.MAXHP = maxhp; Player.Stat.HP = maxhp;
     Player.Stat.MAXMANA = maxmana; Player.Stat.MANA = maxmana;
     Player.Stat.ATK = atk;
     Player.Stat.MA = ma;
-    Player.Stat.AC = ac;
+    Player.Stat.DEF = def;
     Player.Stat.CRIT = crit;
     Player.Stat.DODGE = dodge;
     Player.Stat.Gold = gold;
-    Player.Misc.Spellslots = tokens;
+    Player.Misc.Tokens = tokens;
     Player.ItemBag.Item1 = classitem;
     Player.SpellBag.SigSpell = classspell;
     Player.Stat.CRITMULT += critmult;
-    Player.Misc.XPMult += xpmult;
-    Player.Misc.ManaMult += manamult;
-    Player.Misc.GoldMult += goldmult;
-    Player.Misc.DefMult += defmult;
-    Player.Misc.DefMana += defmana;
+    Player.Multiplier.XPMult += xpmult;
+    Player.Multiplier.ManaMult += manamult;
+    Player.Multiplier.GoldMult += goldmult;
+    Player.Multiplier.DefMult += defmult;
+    Player.Multiplier.PriceMult += pricemult;
+
+    Player.Misc.Itemslots--;
 }
 
 void ClassChoice(Entity& Player){
@@ -3871,7 +4614,7 @@ void ClassChoice(Entity& Player){
 
     clear();
     ClassMenuUIAnim();
-    Start:
+    while(true){
     clear();
     ClassMenuUI();
 
@@ -3880,32 +4623,33 @@ void ClassChoice(Entity& Player){
 
     switch (Action) {
         case 1:
-        ClassClassification(Player,Gladiator, 28, 20, 6, 6, 8, 5, 10, 9, 2, ItmFlurryCoating, SplDuoSlash, 0, 0.1, 0, 0, 0, 0);
+        ClassClassification(Player,Gladiator, 28, 20, 8, 6, 8, 5, 10, 9, 3, ItmFlurryCoating, SplDuoSlash, 0, 0.1, 0, 0, 0, 0);
         break;
 
         case 2:
-        ClassClassification(Player,Wanderer, 24, 25, 4, 12, 4, 5, 5, 16, 2, ItmCursedDice, SplMagicaBlast, 0, -0.1, 0.1, 0, 0, 0);
+        ClassClassification(Player,Wanderer, 24, 25, 4, 12, 4, 5, 5, 16, 3, ItmCursedDice, SplMagicaBlast, 0, 0, 0.1, 0, 0, 0.1);
         break;
 
         case 3:
-        ClassClassification(Player,Berserker, 32, 15, 12, 4, 4, 10, 5, 9, 1, ItmExplosiveJar, SplTemperedCut, 0.5, 0, 0, 0, 0, 0);
+        ClassClassification(Player,Berserker, 32, 12, 12, 4, 4, 10, 5, 9, 2, ItmExplosiveJar, SplTemperedCut, 0.5, 0, 0, 0, 0, 0);
         break;
 
         case 4:
-        ClassClassification(Player,BlackKnight, 40, 20, 8, 8, 6, 0, 0, 5, 2, ItmVoodooDoll, SplKnightStance, 0, 0, 0, 0.1, 0, -0.15);
+        ClassClassification(Player,BlackKnight, 40, 20, 10, 8, 6, 0, 0, 5, 3, ItmVoodooDoll, SplKnightStance, 0, 0, 0, 0.2, -0.5, 0);
         break;
 
         case 999:
-        ClassClassification(Player,God, 50, 30, 15, 15, 10, 20, 20, 99, 2, ItmArmageddon, SplOmnislash, 1, 1, 1, 1, 1, 1);
+        ClassClassification(Player,God, 50, 30, 15, 15, 10, 20, 20, 99, 6, ItmArmageddon, SplOmnislash, 1, 1, 0.1, 1, 1, -0.2);
         break;
 
         default:
         cout << "Invalid choice";
         sleep(1);
-        goto Start;
+        continue;
         break;
     }
+    break;
+}
     clear();
 }
-
 

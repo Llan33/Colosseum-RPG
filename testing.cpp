@@ -1569,7 +1569,11 @@ int main(){
 //LockpickGame1();
 //ArmageddonAnim("\033[47;30m", 1);
 //Starwalker();
+
+while (true){
 ChampionAppearAnim();
+}
+
 
 }
 // \033[47m

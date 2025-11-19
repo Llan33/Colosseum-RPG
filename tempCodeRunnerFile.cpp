@@ -1,1 +1,2 @@
-EnemyA.ItemBag.Item1 = ItemGetRandomEnemy();
+DE_KingsBattleAddisonDeath(Player1);
+    // DE_KingsBattleAidenDeath(Player1);

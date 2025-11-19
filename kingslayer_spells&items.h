@@ -13,10 +13,10 @@
 
 using namespace std;
 
-int TotalItems = 26;
-int TotalSpells = 21;
-int TotalRelics = 15;
-int TotalUpgrades = 10;
+const int TotalItems = 26;
+const int TotalSpells = 21;
+const int TotalRelics = 15;
+const int TotalUpgrades = 11;
 
 //- General Functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 
@@ -31,12 +31,12 @@ void StatOverflowCheck(Entity& User){
 
     if (User.Stat.CRIT > 100){
         User.Stat.CRIT = 100;
-        User.Stat.CRITMULT += 0.02;
+        User.Stat.CRITMULT += 0.05;
     }
 
-    if (User.Stat.DODGE > 75){
-        User.Stat.DODGE = 75;
-        User.Stat.AC += 3;
+    if (User.Stat.DODGE > 70){
+        User.Stat.DODGE = 70;
+        User.Stat.DEF += 1;
     }
 
     if (User.Stat.Gold < 0){
@@ -111,11 +111,11 @@ void Defend(Entity& User){
 
     if (PlayerTurn == true){
         sleep (1);
-        cout << "\tRecovered " << User.Misc.DefMana * 100 << "% of Mana" << "\n\n";
+        cout << "\tRecovered " << User.Multiplier.ManaMult * 100 << "% of Mana" << "\n\n";
     }
 
-	User.Stat.DEF *= User.Misc.DefMult;
-    User.Stat.MANA += (User.Stat.MAXMANA*User.Misc.DefMana);
+	User.Stat.Block *= User.Multiplier.DefMult;
+    User.Stat.MANA += (User.Stat.MAXMANA*User.Multiplier.ManaMult);
 
     StatOverflowCheck(User);
 
@@ -125,7 +125,7 @@ void Defend(Entity& User){
 void BasicAttack(Entity& User, Entity& Target){
 
     usleep(700000);
-    Damage = User.Stat.ATK - Target.Stat.DEF;
+    Damage = ((User.Stat.ATK * User.Multiplier.ATKMult) - Target.Stat.Block);
 
     if (User.Status.Burn > 0) {//Burn cut damage
         Damage = Damage / 2;
@@ -192,7 +192,7 @@ Item ItmIceFlask(IceFlsk,           "\033[96mIce\033[0m Flask", "(Freezes target
 Item ItmChillingOrb(ChillOrb,       "\033[96mChilling\033[0m Orb", "(Freezes target for 4 turns)", 8, 9);
 Item ItmDeadlyJar(DeadJar,          "\033[95mDeadly\033[0m Jar", "(Dooms target w/ all Status)", 12, 9);
 Item ItmLightninginaJar(LightinJar, "\033[93mLightning in a Jar\033[0m", "(Shocks target for 99 turns)", 10, 9);
-Item ItmExplosiveJar(ExplosJar,     "\033[91mExplosive\033[0m Jar", "(Deals 25 Damage)", 4, 9);
+Item ItmExplosiveJar(ExplosJar,     "\033[91mExplosive\033[0m Jar", "(Deals 50 Damage)", 4, 9);
 Item ItmNiceJar(NiceeeJar,          "\033[95mNice\033[0m Jar", "(Deals 69 Damage)", 69, 9);                        //20
 Item ItmCursedDice(CurseDice,       "\033[95mCursed\033[0m Dice", "(Random Effect [1-20])", 5, 9);
 Item ItmWeirdDice(WeirDice,         "\033[90mWeird\033[0m Dice", "(1 in 6 chance to INSTAKILL)", 6, 9);
@@ -200,6 +200,7 @@ Item ItmCoinPouch(CoinBag,          "\033[93mCoin Pouch\033[0m", "(May have good
 Item ItmVoodooDoll(VoodooDo,        "\033[33mVoodoo Doll\033[0m", "(Damages 1.5 x MAXHP [Sacrifices 10% HP])", 12, 9);
 Item ItmPreciseNeedle(PrecNeedle,   "Precise Needle", "(Super low chance to INSTAKILL)", 1, 0);      //25
 Item ItmArmageddon(Armagedon,       "Armageddon", "", 100, 0);
+Item ItmVioletTonic(Tonic,          "\033[1;95mViolet Tonic\033[0m", "(Become \033[1;95mOmnipotent\033[0m)",0,21);
 
 //- Item Effects - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 
@@ -464,10 +465,10 @@ void ItmEffLightninginaJar(Entity& User, Entity& Target){// 18
 void ItmEffExplosiveJar(Entity& User, Entity& Target){// 19
     cout << User.Name << " used Explosive Jar" << "\n\n";
     sleep(1);
-    Damage = 25;
+    Damage = 50;
 	cout << User.Name << " throws the jar at " << Target.Name << "\n\n";
     sleep(1);
-    cout << "\tIt deals 25 Damage" << "\n\n";
+    cout << "\tIt deals 50 Damage" << "\n\n";
     sleep(2);
     clear();
 }
@@ -590,13 +591,13 @@ void ItmEffCursedDice(Entity& User, Entity& Target, bool& ExtraItem){// 21
 			break;
 
 		case 15:
-            cout << "All " << Target.Name << "'s stats decreased by 1!!" << "\n\n";
-            Target.Stat.MAXHP -= 1, Target.Stat.HP -= 1;
-            Target.Stat.ATK -= 1;
-            Target.Stat.MA -= 1;
-            Target.Stat.AC -= 1;
-            Target.Stat.CRIT -= 1;
-            Target.Stat.DODGE -= 1;
+            cout << "All " << Target.Name << "'s stats decreased by 5!!" << "\n\n";
+            Target.Stat.MAXHP -= 5, Target.Stat.HP -= 5;
+            Target.Stat.ATK -= 5;
+            Target.Stat.MA -= 5;
+            Target.Stat.DEF -= 5;
+            Target.Stat.CRIT -= 5;
+            Target.Stat.DODGE -= 5;
 			break;
 
 		case 16:
@@ -625,7 +626,7 @@ void ItmEffCursedDice(Entity& User, Entity& Target, bool& ExtraItem){// 21
             User.Stat.MAXMANA += 1, User.Stat.MANA += 1;
             User.Stat.ATK += 1;
             User.Stat.MA += 1;
-            User.Stat.AC += 1;
+            User.Stat.DEF += 1;
             User.Stat.CRIT += 1, User.Stat.CRITMULT += 0.1;
             User.Stat.DODGE += 1;
             User.Stat.Gold += 1;
@@ -832,40 +833,137 @@ void ItmEffArmageddon(Entity& User, Entity& Target){// 26
         Dialogue(User,Hero,Champion,false,"\033[1;95m","You cannot vanquish me","\033[0m",0);
     }
 }
+void ItmEffVioletTonic(Entity& User){
+    cout << User.Name << " drinks the rare \033[1;95mViolet Tonic\033[0m" << endl;
+    sleep(1);
 
+    for (int c = 0; c < 5; c++){
+    for (int l = 0; l < 7; l++){
+  
+            for(int i = 0; i < 300; i++){
+                if (i % 2 == 0){
+                    cout << "\033[45m                                            \033[0m";
+                }else{
+                    cout << "\033[41m                                            \033[0m";
+                }
+            }
+            usleep(30000);
+            clear();
+
+            for(int i = 0; i < 300; i++){
+                if (i % 2 == 0){
+                    cout << "\033[40m                                            \033[0m";
+                }else{
+                    cout << "\033[45m                                            \033[0m";
+                }
+            }
+            usleep(30000);
+            clear();
+ 
+
+            for(int i = 0; i < 300; i++){
+                if (i % 2 == 0){
+                    cout << "\033[40m                                            \033[0m";
+                }else{
+                    cout << "\033[41m                                            \033[0m";
+                }
+            }
+            usleep(30000);
+            clear();
+
+    }
+    switch (c){
+        case 0:
+        DialogueColored(User,Hero,Nochar,true,"","","",1,"\033[45m");
+        DialogueColored(User,Hero,Nochar,true,"Erk\033[1;30m...\033[0m","","",1000000,"\033[45m");
+        break;
+        case 1:
+        DialogueColored(User,Hero_halfChamp,Nochar,true,"","","",1,"\033[45m");
+        DialogueColored(User,Hero_halfChamp,Nochar,true,"\033[1;30mDamn it...\033[0m","","",1000000,"\033[45m");
+        break;
+        case 2:
+        DialogueColored(User,Hero_Champ,Nochar,true,"","","",1,"\033[45m");
+        DialogueColored(User,Hero_Champ,Nochar,true,"\033[1;30mDAMN IT\033[0m","","",1000000,"\033[45m");
+        break;
+        case 3:
+        DialogueColored(User,Hero,Nochar,true,"","","",1,"\033[45m");
+        DialogueColored(User,Hero,Nochar,true,"","","",300000,"\033[45m");
+        DialogueColored(User,Hero_halfChamp,Nochar,true,"","","",300000,"\033[45m");
+        DialogueColored(User,Hero_Champ,Nochar,true,"","","",300000,"\033[45m");
+        break;
+    }
+}
+    cout << "\033[1;30;45m"; clear();
+
+        cout << "\033[1;30;45m-.-'-.-'-.-'-.-'-.-'-.-'-.-LÉVEL ÚP-.-'-.-'-.-'-.-'-.-'-.-'-.-" << "\n\n"; sleep(1);
+
+    cout << "                   Champion " << User.Name  << endl; usleep(500000);
+
+    cout << "        Lv " << User.Misc.Level << "    "; usleep(50000); User.Misc.Level = 99; cout << ArrowAnim(28); usleep(50000); cout << "     Lv 99      " << "\n\n"; sleep(1);
+
+
+    cout << "        MÁX HP (" << User.Stat.MAXHP << ")     "; usleep(50000); cout << ArrowAnim(11); usleep(50000); cout <<"    MÁX HP (999) " << endl; usleep(100000);
+    cout << "      MAX Mána (" << User.Stat.MAXMANA << ")     "; usleep(50000); cout << ArrowAnim(11); usleep(50000); cout <<"  MAX Maná (99) " << "\n\n"; usleep(100000);
+
+    cout << "           ÁTK (" << User.Stat.ATK << ")     "; usleep(50000); cout << ArrowAnim(11); usleep(50000); cout <<"       ÀTK (999) " << "\n\n"; usleep(100000);
+
+    cout << "            MÀ (" << User.Stat.MA << ")     "; usleep(50000); cout << ArrowAnim(11); usleep(50000); cout <<"        MÁ (999)   " << "\n\n"; usleep(100000);
+
+    cout << "           DÉF (" << User.Stat.DEF << ")     "; usleep(50000); cout << ArrowAnim(11); usleep(50000); cout <<"       DéF (999) " << "\n\n"; usleep(100000);
+
+    cout << "         CRÍT% (" << User.Stat.CRIT << "%)    "; usleep(50000); cout << ArrowAnim(11); usleep(50000); cout <<"     CRÍT% (999%)    " << endl; usleep(100000);
+    cout << "        DÓDGE% (" << User.Stat.DODGE << "%)    "; usleep(50000); cout << ArrowAnim(11); usleep(50000); cout <<"    DODGÉ% (999%) " << "\n\n"; usleep(100000);
+
+        cout << "-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-" << "\n\n"; sleep(1);
+
+    EnterShort();
+
+    User.Stat.MAXHP = 999;
+    User.Stat.HP = 999;
+    User.Stat.MAXMANA = 99;
+    User.Stat.MANA = 99;
+    User.Stat.ATK = 999;
+    User.Stat.MA = 999;
+    User.Stat.DEF = 999;
+    User.Stat.CRIT = 999;
+    User.Stat.DODGE= 999;
+    User.Misc.Type = CHAMPION;
+
+    cout << "\033[0m"; clear();
+}
 
 //- Spell Classifications - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 
                 //Name + Desc char limit is 50 chars coz of shop    \033[1;37m  \033[0m
 //Base Spells
-Spell SplSupremeHeal(SupremHeal, "\033[1;95mSupreme \033[92mHeal\033[0m", "(Heals a \033[1;92mSUPERB\033[0m amount of HP [About ~50%])", 5, 1, 27);
-Spell SplGreatHeal(GrtHeal, "\033[1;94mGreat \033[92mHeal\033[0m", "(Heals a good amount of HP [Above 30%])", 4, 1, 16);    // 9
-Spell SplBloodBinding(BloodBind, "\033[1;31mBlood \033[91mBinding\033[0m", "(Absorbs Target's HP [up to 20%])", 7, 1, 16);     // 10
+Spell SplSupremeHeal(SupremHeal, "\033[1;95mSupreme \033[92mHeal\033[0m", "(Heals a \033[1;92mSUPERB\033[0m amount of HP [About ~50%])", 6, 3, 27);
+Spell SplGreatHeal(GrtHeal, "\033[1;94mGreat \033[92mHeal\033[0m", "(Heals a good amount of HP [Above 30%])", 4, 2, 16);    // 9
+Spell SplBloodBinding(BloodBind, "\033[1;31mBlood \033[91mBinding\033[0m", "(Absorbs Target's HP [up to 30%])", 7, 2, 16);     // 10
 Spell SplWilloWisp(WillWisp, "\033[1;91mWill\033[90m-o-\033[91mWisp\033[0m", "(Burns Target [3-5 turns])", 5, 1, 21); 
-Spell SplIgnitus(Ignits, "\033[1;91mIgnitus\033[0m", "(Massive Fireball [60% Chance to Burn])", 8, 1, 11);
+Spell SplIgnitus(Ignits, "\033[1;91mIgnitus\033[0m", "(Massive Fireball [60% Chance to Burn])", 8, 3, 11);
 Spell SplPoisonCloud(PsnCloud, "\033[1;92mPoison \033[90mCloud\033[0m", "(Poisons Target [3-5 turns])", 7, 1, 16);
-Spell SplInfestation(Infestat, "\033[1;92mInfestation\033[0m", "(Flurry of Poisoning Attacks[2-6])", 9, 1, 11);
+Spell SplInfestation(Infestat, "\033[1;92mInfestation\033[0m", "(Flurry of Poisoning Attacks[2-6])", 9, 3, 11);
 Spell SplViciousMockery(VMock, "\033[1;96mVicious \033[95mMockery\033[0m", "(Chance to Freeze [2-3 turns])", 4, 1, 16); // 15
-Spell SplFrigidLaceration(FrigLaceration, "\033[1;96mFrigid Laceration\033[0m", "(Stronger Attack that may Freeze)", 5, 1, 11);
-Spell SplThunderChain(ThundChain, "\033[1;93mThunder Chain\033[0m", "(4-10 Lightning Shots [25% to Shock])", 6, 1, 11);
-Spell SplPolarityShock(PolarShock, "\033[1;94mPolarity \033[93mShock\033[0m", "(Wild ThunderBolt [80% to Shock])", 8, 1, 16);
-Spell SplStatisticalLightbeam(StatBeam, "\033[1;93mStatistical LightBeam\033[0m", "(Damage = 20% Total Stats)", 6, 1, 11);
+Spell SplFrigidLaceration(FrigLaceration, "\033[1;96mFrigid Laceration\033[0m", "(Stronger Attack that may Freeze)", 5, 2, 11);
+Spell SplThunderChain(ThundChain, "\033[1;93mThunder Chain\033[0m", "(4-10 Lightning Shots [25% to Shock])", 6, 2, 11);
+Spell SplPolarityShock(PolarShock, "\033[1;94mPolarity \033[93mShock\033[0m", "(Wild ThunderBolt [80% to Shock])", 8, 2, 16);
+Spell SplStatisticalLightbeam(StatBeam, "\033[1;93mStatistical LightBeam\033[0m", "(Deals 30% of your Total Stat Number)", 6, 1, 11);
 Spell SplMetaphysicalOverload(MetaOverload, "\033[1;95mMetaphysical Overload\033[0m", "(Low chance of INSTAKILL)", 4, 1, 11); // 20
-Spell SplChromaticWave(ChromWave, "\033[1;95mCh\033[94mro\033[96mma\033[92mti\033[93mc \033[91mWa\033[95mve\033[0m", "(Uses a \033[1;95mR\033[91ma\033[93mn\033[92md\033[96mo\033[94mm \033[0mSpell's Effect)", 5, 1, 77);
+Spell SplChromaticWave(ChromWave, "\033[1;95mCh\033[94mro\033[96mma\033[92mti\033[93mc \033[91mWa\033[95mve\033[0m", "(Uses a \033[1;95mR\033[91ma\033[93mn\033[92md\033[96mo\033[94mm \033[0mSpell's Effect)", 5, 2, 77);
 //Class Exclusive Spells
-Spell SplDuoSlash(DuoSlsh, "\033[1;33mDuo \033[37mSlash\033[0m", "(Double Slash that Attacks twice)", 4, 0, 16);                 // 2
-Spell SplCrossSlash(CrossSlsh, "\033[1;33mCross \033[37mSlash\033[0m", "(Cool Slash that Attacks 3 Times)", 6, 0, 16);
-Spell SplMagicaBlast(MBlast, "\033[1;94mMagica \033[37mBlast\033[0m", "(Magic Based Normal Attack [x1.2])", 2, 0, 16);           // 4
-Spell SplArcaneBlast(ArcBlast, "\033[1;94mArcane \033[37mBlast\033[0m", "(Stronger Magic Based Attack [x1.8])", 3, 0, 16);
-Spell SplTemperedCut(TempnRageCut, "\033[1;91mTempered \033[37mCut\033[0m", "(Guaranteed Critical Hit)", 6, 0, 16);              // 6
-Spell SplEnragedCut(TempnRageCut, "\033[1;91mEnraged \033[37mCut\033[0m", "(Cheaper Guaranteed Critical Hit)", 3, 0, 16);        // 6 Both Have Same Effect
-Spell SplKnightStance(KnghtStance, "\033[1;37mKnight's Stance\033[0m", "(Attack + Defend at the same time)", 3, 0, 11);
-Spell SplRoyalKnightStance(RoylkKnghtStance, "\033[1;91mR\033[37mo\033[93my\033[37ma\033[93ml \033[37mKnight's Stance\033[0m", "(Attack[w/ Status] + Defend)", 5, 0, 36);// 8
+Spell SplDuoSlash(DuoSlsh, "\033[1;33mDuo \033[37mSlash\033[0m", "(Double Slash that Attacks twice)", 4, 1, 16);                 // 2
+Spell SplCrossSlash(CrossSlsh, "\033[1;33mCross \033[37mSlash\033[0m", "(Cool Slash that Attacks 3 Times)", 6, 2, 16);
+Spell SplMagicaBlast(MBlast, "\033[1;94mMagica \033[37mBlast\033[0m", "(MAGIC Based Normal Attack [x1.2])", 2, 1, 16);           // 4
+Spell SplArcaneBlast(ArcBlast, "\033[1;94mArcane \033[37mBlast\033[0m", "(Stronger MAGIC Based Attack [x1.8])", 3, 2, 16);
+Spell SplTemperedCut(TempnRageCut, "\033[1;91mTempered \033[37mCut\033[0m", "(Guaranteed Critical Hit)", 8, 1, 16);              // 6
+Spell SplEnragedCut(TempnRageCut, "\033[1;91mEnraged \033[37mCut\033[0m", "(Cheaper Guaranteed Critical Hit)", 5, 2, 16);        // 6 Both Have Same Effect
+Spell SplKnightStance(KnghtStance, "\033[1;37mKnight's Stance\033[0m", "(Attack + Defend at the same time)", 3, 1, 11);
+Spell SplRoyalKnightStance(RoylkKnghtStance, "\033[1;91mR\033[37mo\033[93my\033[37ma\033[93ml \033[37mKnight's Stance\033[0m", "(Attack[w/ Status] + Defend)", 5, 2, 36);// 8
 //Class Ultimates
-Spell SplOmnislash(Omnislsh, "\033[1;33mOmnislash\033[0m", "(Broken Slash that Attacks 5-6 Times)", 8, 0, 11);
-Spell SplWarlockBlast(WarBlast, "\033[1;95mWarlock \033[94mBlast\033[0m", "(Massive Magic Based Attack [x3.0])", 4, 0, 16);
-Spell SplVengeanceCut(VengCut, "\033[1;31mVengeful Cut\033[0m", "(Guaranteed HP Absorving CRIT)", 4, 0, 11);
-Spell SplBlackKnightStance(BlckKnghtStance, "\033[1;90mBlack Knight's Stance\033[0m", "(Attack + Defend[Status x2])", 5, 0, 11);
+Spell SplOmnislash(Omnislsh, "\033[1;33mOmnislash\033[0m", "(Broken Slash that Attacks 5-6 Times)", 8, 4, 11);
+Spell SplWarlockBlast(WarBlast, "\033[1;95mWarlock \033[94mBlast\033[0m", "(Massive MAGIC Based Attack [x3.0])", 5, 4, 16);
+Spell SplVengeanceCut(VengCut, "\033[1;31mVengeful Cut\033[0m", "(Guaranteed HP Absorving CRIT)", 6, 4, 11);
+Spell SplBlackKnightStance(BlckKnghtStance, "\033[1;90mBlack Knight's Stance\033[0m", "(Attack + Defend[Status x2])", 6, 4, 11);
 
 //- Spell Effects - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 
@@ -876,7 +974,7 @@ void SplEffSmallHeal(Entity& User){// 1
     cout << User.Name << " casted Small Heal" << "\n\n";
     sleep(1);
 
-    Heal = (User.Stat.MAXHP * 0.15) + (User.Stat.MA / 4);
+    Heal = (User.Stat.MAXHP * 0.15) + ((User.Stat.MA * User.Multiplier.MAGICMult) / 4);
 
     cout << "It Heals itself slightly" << "\n\n";
     sleep(1);
@@ -948,7 +1046,7 @@ void SplEffMagicaArcaneWarlockBlast(Entity& User, Entity& Target, float DamageMu
     }
     
     sleep(1);
-    Damage = (User.Stat.MA * DamageMult) - Target.Stat.DEF;
+    Damage = ((User.Stat.MA * User.Multiplier.MAGICMult) * DamageMult) - Target.Stat.DEF;
 
     if (Damage <= 0) {
         Damage = 1;
@@ -977,7 +1075,7 @@ void SplEffTemperedandEnragedCut(Entity& User, Entity& Target){// 6
     
     sleep(1);
 
-	Damage = User.Stat.ATK - Target.Stat.DEF;
+	Damage = (User.Stat.ATK * User.Multiplier.ATKMult) - Target.Stat.DEF;
 
 	if (User.Status.Burn > 0) {//Burn cut damage
         Damage = Damage / 2;
@@ -986,11 +1084,27 @@ void SplEffTemperedandEnragedCut(Entity& User, Entity& Target){// 6
 	if (Damage <= 0) {
         Damage = 1;
     }
+
+    Chance = rand() % 100 + 1;
+
+    if (Target.Stat.DODGE >= Chance) {//Dodge
+        
+        Damage = 0;
+        if (PlayerTurn == true){ 
+            cout << "\tYou missed\n\n";
+        }else {
+            cout << "\tYou dodged its attack!\n\n";
+        } 
+
+        usleep(500000);
+
+    }else {
+        Damage *= User.Stat.CRITMULT;
+        CriticalHitUI();
+        sleep (1);
+        cout << "\t" << User.Name << " dealt " << Damage << " damage\n\n"; 
+    }
 		
-	Damage *= User.Stat.CRITMULT;
-    CriticalHitUI();
-    sleep (1);
-	cout << "\t" << User.Name << " dealt " << Damage << " damage\n\n"; 
     sleep(2);
     clear();
 }
@@ -1058,10 +1172,10 @@ void SplEffGreatHeal(Entity& User){// 9
 
     Chance = rand() % 100 + 1;
     if (User.Stat.CRIT >= Chance){
-        Heal = (User.Stat.MAXHP * 0.30) + ((User.Stat.MAXHP * 0.05) * User.Stat.CRITMULT) + (User.Stat.MA / 2);
+        Heal = (User.Stat.MAXHP * 0.30) + ((User.Stat.MAXHP * 0.05) * User.Stat.CRITMULT) + ((User.Stat.MA * User.Multiplier.MAGICMult) / 2);
         cout << "\tIt CRITICALLY Heals itself Greatly!" << "\n\n";
     }else{
-        Heal = (User.Stat.MAXHP * 0.30) + (User.Stat.MA / 2);
+        Heal = (User.Stat.MAXHP * 0.30) + ((User.Stat.MA * User.Multiplier.MAGICMult) / 2);
         cout << "It Heals itself thoroughly" << "\n\n";
     }
     sleep(1);
@@ -1088,33 +1202,30 @@ void SplEffBloodBinding(Entity& User, Entity& Target){// 10
     sleep(1);
     
     cout << "And it sprints towards " << Target.Name << " to bite it" << "\n\n";
-    sleep(2);
+    sleep(1);
 
 	Chance = rand() % 100 + 1;
 	if (User.Stat.CRIT >= Chance) {
         CriticalHitUI();
         sleep(1);
-        Damage = (Target.Stat.MAXHP * 0.20) + (User.Stat.MA / 5);
-        if (Damage < 8){
-            Damage = 8;
-        }
-        if (Damage > (User.Stat.MAXHP)){
-            Damage = User.Stat.MAXHP;
+        Damage = ((User.Stat.ATK * User.Multiplier.ATKMult) / 2) + ((User.Stat.MA * User.Multiplier.MAGICMult) / 1.5);
+        Damage *= User.Stat.CRITMULT;
+
+        if (Damage > (Target.Stat.MAXHP * 0.4)){
+            Damage = Target.Stat.MAXHP * 0.4;
         }
         cout << "\n\t" << User.Name << " CRITICALY absorved " << Damage << " HP!\n\n";
 	}else {
-        Damage = (Target.Stat.MAXHP * 0.15) + (User.Stat.MA / 8);
-        if (Damage < 5){
-            Damage = 5;
-        }
-        if (Damage > (User.Stat.MAXHP * 0.90)){
-            Damage = User.Stat.MAXHP * 0.90;
+        Damage = ((User.Stat.ATK * User.Multiplier.ATKMult) / 2) + ((User.Stat.MA * User.Multiplier.MAGICMult) / 1.5);
+
+        if (Damage > (Target.Stat.MAXHP * 0.3)){
+            Damage = Target.Stat.MAXHP * 0.3;
         }
         cout << "\t" << NamelenghtBar(User, "~") << "~~~~~~~~~~~~~~~~~" << endl;
         cout << "\t " << User.Name << " Absorved " << Damage << " HP" << endl;
         cout << "\t" << NamelenghtBar(User, "~") << "~~~~~~~~~~~~~~~~~" << "\n\n";
     }
-    sleep (2);
+    sleep (1);
     Heal = Damage;
     User.Stat.HP += Heal;
     StatOverflowCheck(User);
@@ -1130,7 +1241,7 @@ void SplEffWilloWisp(Entity& User, Entity& Target){// 11
     sleep(2);
 
     Chance = rand() % 15 + 1;
-	if (User.Stat.MA >= Chance){
+	if ((User.Stat.MA * User.Multiplier.MAGICMult) >= Chance){
         Burning++;
     }
 
@@ -1169,7 +1280,7 @@ void SplEffIgnitus(Entity& User, Entity& Target){// 12
 
     cout << "\t" << User.Name << ": '\033[91mIGNITUS\033[0m'" << "\n\n";
 
-	Damage = (User.Stat.MA * 3) - Target.Stat.DEF;
+	Damage = ((User.Stat.MA * User.Multiplier.MAGICMult) * 3) - Target.Stat.DEF;
 
     if (Damage <= 0){
         Damage = 3;
@@ -1211,7 +1322,7 @@ void SplEffPoisonCloud(Entity& User, Entity& Target){// 13
     sleep(2);
 
     Chance = rand() % 15 + 1;
-	if (User.Stat.MA >= Chance){
+	if ((User.Stat.MA * User.Multiplier.MAGICMult) >= Chance){
         Poisoning++;
     }
 
@@ -1254,7 +1365,7 @@ void SplEffInfestation(Entity& User, Entity& Target){// 14
 	for (int t = rand() % 4 + 3; t > 0; t--){
 
 	    Target.Stat.HP -= Damage;
-	    Damage = (User.Stat.ATK / 2) - (Target.Stat.DEF / 2);
+	    Damage = ((User.Stat.ATK * User.Multiplier.ATKMult) / 2) - (Target.Stat.DEF / 2);
 
         if (Damage <= 0){
             Damage = 2;
@@ -1278,7 +1389,7 @@ void SplEffInfestation(Entity& User, Entity& Target){// 14
             TotalDamage += Damage;
 
             Chance = rand() % 100 + 1;
-            if (Chance <= (50 + User.Stat.MA)){
+            if (Chance <= (50 + (User.Stat.MA * User.Multiplier.MAGICMult))){
                 Target.Status.Poison++;
                 TotalPoison++;
                 cout << "[\033[1;92m+1 Poison!\033[0m]";
@@ -1316,7 +1427,7 @@ void SplEffViciousMockery(Entity& User, Entity& Target){// 15
     sleep(1);
 
     Chance = rand() % 25 + 1;
-	if (User.Stat.MA >= Chance){ // Odds (Magic based and Dodge based)
+	if ((User.Stat.MA * User.Multiplier.MAGICMult) >= Chance){ // Odds (Magic based and Dodge based)
         Chance = rand() % 100 + 1;
         if (Target.Stat.DODGE <= Chance){
             Effective = true;
@@ -1380,7 +1491,7 @@ void SplEffFrigidLaceration(Entity& User, Entity& Target){// 16
     cout << "and it slashes " << Target.Name << "\n\n";
     sleep(1);
 
-	Damage = (User.Stat.ATK + (User.Stat.MA / 2)) - Target.Stat.DEF;
+	Damage = ((User.Stat.ATK * User.Multiplier.ATKMult) + ((User.Stat.MA * User.Multiplier.MAGICMult) / 2)) - Target.Stat.DEF;
     if (Damage <= 0){
         Damage = 1;
     };
@@ -1402,7 +1513,7 @@ void SplEffFrigidLaceration(Entity& User, Entity& Target){// 16
         sleep(1);
 
 	    Chance = rand() % 20 + 1;
-	    if (User.Stat.MA >= Chance){
+	    if ((User.Stat.MA * User.Multiplier.MAGICMult) >= Chance){
             Chance = rand() % 100 + 1;
             if (Target.Stat.DODGE <= Chance) {
                 cout << "    \033[96m" << NamelenghtBar(Target,"*") << "*******************\033[0m" << endl;
@@ -1429,7 +1540,7 @@ void SplEffThunderChain(Entity& User, Entity& Target){// 17
 	for (int t = rand() % 7 + 4; t > 0; t--){
 
 	    Target.Stat.HP -= Damage;
-	    Damage = (User.Stat.MA/4);
+	    Damage = ((User.Stat.MA * User.Multiplier.MAGICMult)/4);
 
         if (Damage <= 0){
             Damage = 1;
@@ -1452,7 +1563,7 @@ void SplEffThunderChain(Entity& User, Entity& Target){// 17
 
             TotalDamage += Damage;
 
-            Chance = rand() % 4 + 1;
+            Chance = rand() % 3 + 1;
             if (Chance == 3){
                 Target.Status.Shock++;
                 TotalShock++;
@@ -1479,7 +1590,7 @@ void SplEffPolarityShock(Entity& User, Entity& Target){// 18
 
     cout << "\t" << User.Name << ": '\033[93mELECTRIFY\033[0m'" << "\n\n";
 
-	Damage = (User.Stat.MA * 3) - Target.Stat.DEF;
+	Damage = ((User.Stat.MA * User.Multiplier.MAGICMult) * 3) - Target.Stat.DEF;
 
     if (Damage <= 0){
         Damage = 3;
@@ -1517,7 +1628,7 @@ void SplEffStatisticalLightBeam(Entity& User, Entity& Target){// 19
     cout << "A violent Godray falls upon " << Target.Name << "\n\n";
     sleep (1);
 
-	Damage = (User.Stat.ATK + User.Stat.MA + User.Stat.CRIT + User.Stat.DODGE + User.Stat.AC + User.Stat.MAXHP + User.Stat.MAXMANA + User.Stat.CRITMULT)/5 - Target.Stat.DEF;
+	Damage = ((User.Stat.ATK * User.Multiplier.ATKMult) + (User.Stat.MA * User.Multiplier.MAGICMult) + User.Stat.CRIT + User.Stat.DODGE + User.Stat.DEF + User.Stat.MAXHP + User.Stat.MAXMANA + User.Stat.CRITMULT)*0.30 - Target.Stat.Block;
     if (Damage <= 0){
         Damage = 1;
     }
@@ -1560,7 +1671,7 @@ void SplEffMetaphysicalOverload(Entity& User, Entity& Target){// 20
     sleep(1);
 
 	Chance = rand() % 1000 + 1;
-	if (Chance <= (50 + (User.Stat.MA*3))){
+	if (Chance <= (50 + ((User.Stat.MA * User.Multiplier.MAGICMult)*3))){
         cout << "\t !!!";
         usleep(500000);
         InstaKill(Target);
@@ -1587,13 +1698,13 @@ void SplEffChromaticWave(Entity& User, Entity& Target){// 21
         "     Infestation     ",//6
         "Statistical Lightbeam",//7
         "     Will-o-Wisp     ",//8
-        "    Poison Cloud     ",//9
+        "Royal Knight's Stance",//9
         "   Vicious Mockery   ",//10
         "     Great Heal      ",//11
-        "     Small Heal      ",//12
+        "   Polarity Shock    ",//12
         "    Tempered Cut     ",//13
-        "    Magica Blast     ",//14
-        "      Duo Slash      ",//15
+        "    Warlock Blast    ",//14
+        "     Cross Slash     ",//15
         "     Armageddon      "//Secret 16
     };
 
@@ -1682,7 +1793,7 @@ void SplEffChromaticWave(Entity& User, Entity& Target){// 21
         SplEffWilloWisp(User, Target);
         break;
         case 9:
-        SplEffPoisonCloud(User, Target);
+        SplEffRoyalKnightStance(User, Target);
         break;
         case 10:
         SplEffViciousMockery(User, Target);
@@ -1691,16 +1802,16 @@ void SplEffChromaticWave(Entity& User, Entity& Target){// 21
         SplEffGreatHeal(User);
         break;
         case 12:
-        SplEffSmallHeal(User);
+        SplEffPolarityShock(User, Target);
         break;
         case 13:
         SplEffTemperedandEnragedCut(User, Target);
         break;
         case 14:
-        SplEffMagicaArcaneWarlockBlast(User, Target, 1.3);
+        SplEffMagicaArcaneWarlockBlast(User, Target, 3);
         break;
         case 15:
-        SplEffDuoSlash(User, Target);
+        SplEffCrossSlash(User, Target);
         break;
         case 16:
         ItmEffArmageddon(User, Target);
@@ -1744,7 +1855,7 @@ void SplEffVengeanceCut(Entity& User, Entity& Target){// 24
     cout << User.Name << "'s eyes enrage" << "\n\n";
     sleep(1);
 
-	Damage = User.Stat.ATK - Target.Stat.DEF;
+	Damage = (User.Stat.ATK * User.Multiplier.ATKMult) - Target.Stat.DEF;
 
 	if (User.Status.Burn > 0) {//Burn cut damage
         Damage = Damage / 2;
@@ -1843,10 +1954,10 @@ void SplEffSupremeHeal(Entity& User){// 26
 
     Chance = rand() % 75 + 1;
     if (User.Stat.CRIT >= Chance){
-        Heal = (User.Stat.MAXHP * 0.40) + ((User.Stat.MAXHP * 0.05) * User.Stat.CRITMULT) + (User.Stat.MA / 1.25);
+        Heal = (User.Stat.MAXHP * 0.40) + ((User.Stat.MAXHP * 0.05) * User.Stat.CRITMULT) + ((User.Stat.MA * User.Multiplier.MAGICMult) / 1.25);
         cout << "\tIt CRITICALLY Heals itself Supremely!" << "\n\n";
     }else{
-        Heal = (User.Stat.MAXHP * 0.40) + (User.Stat.MA / 1.25);
+        Heal = (User.Stat.MAXHP * 0.40) + ((User.Stat.MA * User.Multiplier.MAGICMult) / 1.25);
         cout << "It Heals itself incredibly" << "\n\n";
     }
     sleep(1);
@@ -1869,18 +1980,18 @@ void SplEffSupremeHeal(Entity& User){// 26
 Relic RlcHighCarbonSword(CarbonSwrd,   "High Carbon Sword", "    Increases CritDamage [+100%]    ", "    /\\    ", "    ||    ", "    ||    ", "\033[90m  ''TT''  \033[0m", "\033[90m    ||    \033[0m");
 Relic RlcArcaneRing(ArcRing,           "   Arcane Ring   ", "      Spells cost 1 less Mana       ", "\033[94m   _,_,_  \033[0m", "\033[94m  (\033[0m#\033[94m____) \033[0m", "\033[93m  /\033[33m/   \\\\ \033[0m", "\033[33m  \\\\___// \033[0m", "\033[33m   '---'  \033[0m");
 Relic RlcTarotNecklace(TarotNeckl,     " Tarot Necklace  ", "+Odds of UP Cards having Higher Rank", "   ....   ", " .'    '. ", "'._.--._.'", " |_\033[94m () \033[0m_| ", "   '--'   ");
-Relic RlcWarlocksStone(WarlckStone,    " Warlock's Stone ", "          +1 Spell Token            ", "          ", "\033[91m~\033[35m   ___   \033[0m", "\033[35m__.'\033[0m#\033[35m.'\\_\033[91m~\033[0m", "\033[35m\\_'_.'.__]\033[0m", "\033[91m   ~      \033[0m");
-Relic RlcCutePouch(CuteBag,            "   Cute Pouch    ", "           +2 Item Slots            ", "\033[93m   ____   \033[0m", "\033[93m   .' \\\033[95m * \033[0m", "\033[95m*\033[93m /\033[0mo o\033[93m '. \033[0m", "\033[93m / \033[0m U \033[93m  |\033[95m*\033[0m", "\033[93m \\______/ \033[0m");// 5
+Relic RlcWarlocksStone(WarlckStone,    " Warlock's Stone ", "  +1 Spell Slot & +3 Spell Tokens   ", "          ", "\033[91m~\033[35m   ___   \033[0m", "\033[35m__.'\033[0m#\033[35m.'\\_\033[91m~\033[0m", "\033[35m\\_'_.'.__]\033[0m", "\033[91m   ~      \033[0m");
+Relic RlcCutePouch(CuteBag,            "   Cute Pouch    ", "     +2 Item Slots & Gain +10g      ", "\033[93m   ____   \033[0m", "\033[93m   .' \\\033[95m * \033[0m", "\033[95m*\033[93m /\033[0mo o\033[93m '. \033[0m", "\033[93m / \033[0m U \033[93m  |\033[95m*\033[0m", "\033[93m \\______/ \033[0m");// 5
 Relic RlcCorruptSigil(CorruptSigl,     "  Corrupt Sigil  ", "     Bosses get slightly weaker     ", "\033[92m#\033[35m    |   \033[91m^\033[0m", "\033[35m  .--|-'' \033[0m", "\033[35m     |    \033[0m", "\033[35m    \\| .'.\033[0m", "\033[93m*\033[35m '.-|'  \033[96m~\033[0m");
-Relic RlcLuckyCharm(LuckyChrm,         "   Lucky Charm   ", "        Earn more XP [+30%]         ", "\033[92m    /\\    \033[0m", "  .'\033[92m/\\\033[0m'.  \033[0m", "\033[92m<\033[0m:\033[92m<    >\033[0m:\033[92m>\033[0m", "  '.\033[92m\\/\033[0m.'  \033[0m", "\033[92m    \\/    \033[0m");
+Relic RlcLuckyCharm(LuckyChrm,         "   Lucky Charm   ", "        Earn more XP [+60%]         ", "\033[92m    /\\    \033[0m", "  .'\033[92m/\\\033[0m'.  \033[0m", "\033[92m<\033[0m:\033[92m<    >\033[0m:\033[92m>\033[0m", "  '.\033[92m\\/\033[0m.'  \033[0m", "\033[92m    \\/    \033[0m");
 Relic RlcCatStatue(CatStatu,           "   Cat Statue    ", " Shop Prices are discounted [-25%]  ", "()\033[93m/\\__/\\  \033[0m", "\033[93m||\033[0m* VV *\033[93m) \033[0m", "\033[93m\\ \\   _/| \033[0m", "\033[93m |   \033[0m(_\033[93m_| \033[0m", "\033[93m |_.__._| \033[0m");
 Relic RlcUnderworldSkull(UnderSkull,   " Underworld Skull", "  Upon Death, Revive Once [50% HP]  ", "  ______  ", " /      \\ ", "|\033[91m #  # \033[0m  \\", " \\...-'\\ |", " \\'''_.-:'");
 Relic RlcCheatScroll(CheatM,           "  Cheat Scroll   ", " Chance to get an Extra Turn [15%]  ", " \033[90m__----O\033[0m  ", "\033[90mO--**''\033[0m\\  ", " \\      \\ ", "  \\\033[90m __---O\033[0m", "   \033[90mO--**''\033[0m");// 10
-Relic RlcInsightfulLenses(InsightLen,  "Insightful Lenses", "  Ability to see the Enemy's Stats  ", " ,,,  ,,, ", " __   __  ", "/  \\ /  \\ ", "\\\033[36m#\033[0m_/ \\\033[36m#\033[0m_/ ", "          ");
-Relic RlcCeramicPot(CeramPot,          "   Ceramic Pot   ", " When a Round ends, gain more Gold  ", "  ______  ", "  \\#   /  ", "  /    \\  ", "\033[92m  \\/\\/\\/  \033[0m", "  \\____/  ");
-Relic RlcEdibleHeart(EatHeart,         "  Edible Heart   ", "   When a Round ends, heal 15% HP   ", "\033[91m  ..   .. \033[0m", "\033[91m '\033[0m#\033[91m '.'  '\033[0m", "\033[91m '.     .'\033[0m", "\033[91m   '. .'  \033[0m", "\033[91m     '    \033[0m");
-Relic RlcEggPal(EggP,                  "     Egg Pal     ", "     Might Attack alongside You     ", " \033[90m  __\033[91m#\033[90m_   \033[0m", "\033[90m <\033[0m......\033[90m> \033[0m", " \033[93m/\033[0m -__- \033[93m\\ \033[0m", " \033[93m|\033[90m______\033[93m|\033[0m ", " \033[90m \\____/ \033[0m ");
-Relic RlcMagicaCarnation(MagicaCarnati," Magica Carnation", "When a Round ends, restore more Mana", "\033[36m  \\\033[96m^\033[36m\\\033[96m^\033[36m/\033[96m^\033[36m/ \033[0m", "\033[36m    \\\033[96m^\033[36m/   \033[0m", "\033[92m     |    \033[0m", "\033[92m   '\\|/'  \033[0m", "\033[92m     |    \033[0m");// 15
+Relic RlcInsightfulLenses(InsightLen,  "Insightful Lenses", "Can see Enemy's Stats & +10 Max Mana", " ,,,  ,,, ", " __   __  ", "/  \\ /  \\ ", "\\\033[36m#\033[0m_/ \\\033[36m#\033[0m_/ ", "          ");
+Relic RlcCeramicPot(CeramPot,          "   Ceramic Pot   ", "       Gain more Gold [+30%]        ", "  ______  ", "  \\#   /  ", "  /    \\  ", "\033[92m  \\/\\/\\/  \033[0m", "  \\____/  ");
+Relic RlcEdibleHeart(EatHeart,         "  Edible Heart   ", "   When a Round ends, heal 20% HP   ", "\033[91m  ..   .. \033[0m", "\033[91m '\033[0m#\033[91m '.'  '\033[0m", "\033[91m '.     .'\033[0m", "\033[91m   '. .'  \033[0m", "\033[91m     '    \033[0m");
+Relic RlcEggPal(EggP,                  "     Egg Pal     ", "     Will assist you in Battle      ", " \033[90m  __\033[91m#\033[90m_   \033[0m", "\033[90m <\033[0m......\033[90m> \033[0m", " \033[93m/\033[0m -__- \033[93m\\ \033[0m", " \033[93m|\033[90m______\033[93m|\033[0m ", " \033[90m \\____/ \033[0m ");
+Relic RlcMagicaCarnation(MagicaCarnati," Magica Carnation", "   +10% ManaMult & +100% BlockMult  ", "\033[36m  \\\033[96m^\033[36m\\\033[96m^\033[36m/\033[96m^\033[36m/ \033[0m", "\033[36m    \\\033[96m^\033[36m/   \033[0m", "\033[92m     |    \033[0m", "\033[92m   '\\|/'  \033[0m", "\033[92m     |    \033[0m");// 15
 
 //- Relic Effects - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 
@@ -1902,40 +2013,47 @@ void RelicEffects(Entity& Player, Relic *useRelic){
         break;
 
         case WarlckStone:
-        Player.Misc.Spellslots++; // Warlock's Stone Check
+        Player.Misc.Tokens += 3; // Warlock's Stone Check
+        Player.Misc.Spellslots++;
         break;
 
         case CuteBag:
         Player.Misc.Itemslots += 2; // Cute Pouch Check
+        Player.Stat.Gold += 10;
         break;
 
         case LuckyChrm:
-        Player.Misc.XPMult += 0.30; // Lucky Charm Check
+        Player.Multiplier.XPMult += 0.60; // Lucky Charm Check
         break;
 
         case CatStatu:
-        Player.Misc.PriceMult -= 0.25; // Cat Statue Check
+        Player.Multiplier.PriceMult -= 0.25; // Cat Statue Check
+        break;
+
+        case InsightLen:
+        Player.Stat.MAXMANA += 10;
         break;
 
         case CeramPot:
-        Player.Misc.GoldMult += 0.35; // Ceramic Pot Check
+        Player.Multiplier.GoldMult += 0.3; // Ceramic Pot Check
         break;
 
         case MagicaCarnati:
-        Player.Misc.ManaMult += 0.75; // Magica Carnation Check
+        Player.Multiplier.ManaMult += 0.10; // Magica Carnation Check
+        Player.Multiplier.DefMult += 1;
         break;
     }
     cout << "\t\t\t\t     " << "-  - - --" << Player.Name << " AQUIRED A RELIC-- - -  -" << "\n\n";
     sleep(1);
-    cout << "\t\t\t\t\t\t    " << useRelic->Image.Line1 << endl;
+    cout << "\t\t\t\t\t\t    " << useRelic->Lines[0] << endl;
     usleep(100000);
-    cout << "\t\t\t\t\t\t    " << useRelic->Image.Line2 << endl;
+    cout << "\t\t\t\t\t\t    " << useRelic->Lines[1] << endl;
     usleep(100000);
-    cout << "\t\t\t\t\t\t    " << useRelic->Image.Line3 << endl;
+    cout << "\t\t\t\t\t\t    " << useRelic->Lines[2] << endl;
     usleep(100000);
-    cout << "\t\t\t\t\t\t    " << useRelic->Image.Line4 << endl;
+    cout << "\t\t\t\t\t\t    " << useRelic->Lines[3] << endl;
     usleep(100000);
-    cout << "\t\t\t\t\t\t    " << useRelic->Image.Line5 << "\n\n";
+    cout << "\t\t\t\t\t\t    " << useRelic->Lines[4] << "\n\n";
     usleep(500000);
     cout << "\t\t\t\t\t\t      " << "Got the" << endl;
     usleep(500000);
@@ -1950,18 +2068,18 @@ void RelicEffects(Entity& Player, Relic *useRelic){
 void BossWeakeningbyCorruptSigil(Entity&Player, Entity& Target){
     if (Player.Misc.Type == PLAYER1){ // Corrupted Sigil Check
         if (RlcCorruptSigil.Obtained.P1 == true){
-            Target.Stat.HP *= 0.85;
+            Target.Stat.HP *= 0.80;
             Target.Stat.ATK *= 0.9;
             Target.Stat.MA *= 0.9;
-            Target.Stat.AC *= 0.8;
+            Target.Stat.DEF *= 0.8;
 
         }
     }else if (Player.Misc.Type == PLAYER2){
         if (RlcCorruptSigil.Obtained.P2 == true){
-            Target.Stat.HP *= 0.85;
+            Target.Stat.HP *= 0.80;
             Target.Stat.ATK *= 0.9;
             Target.Stat.MA *= 0.9;
-            Target.Stat.AC *= 0.8;
+            Target.Stat.DEF *= 0.8;
         }
     }
 }
@@ -1973,6 +2091,9 @@ void EggPalAction(Entity&Player, Entity& Target){
         int Heal = Player.Stat.MA / 3;
         cout << "Egg Pal restored " << Heal << " HP to " << Player.Name << "\n\n";
         Player.Stat.HP += Heal;
+    }else if((Target.Status.Poison > 0 || Target.Status.Burn > 0) && Target.Status.Shock == 0){
+        Target.Status.Shock += 3;
+        cout << "Egg Pal \033[93mShocks\033[0m " << Target.Name << "!" << "\n\n";
     }else{
         Damage = Player.Stat.ATK / 3;
         cout << "Egg Pal deals " << Damage << " Damage!" << "\n\n";
@@ -1985,16 +2106,17 @@ void EggPalAction(Entity&Player, Entity& Target){
 //- Upgrade Classifications - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 
                 //Name + Desc char limit is 50 chars coz of shop
-Upgrade UpgConstitutionBoost(CONSTITUTION, "\033[92mConstitution\033[0m Boost", "(MAX HP + 20% [At Least + 10])", 10, 9);
-Upgrade UpgSwordSharpening(SHARPENING, "\033[90mSword\033[0m Sharpening", "(ATK + 20% [At Least + 5])", 10, 9);
-Upgrade UpgArcanaBurst(ARCBURST, "\033[94mArcana\033[0m Burst", "(MA + 20% [At Least + 5])", 10, 9);
-Upgrade UpgArmorReinforcement(ARMORUP, "\033[90mArmor\033[0m Reinforcement", "(AC + 20% [At Least + 5])", 10, 9);
+Upgrade UpgConstitutionBoost(CONSTITUTION, "\033[92mConstitution\033[0m Boost", "(MAX HP + 10% [At Least + 15])", 10, 9);
+Upgrade UpgSwordSharpening(SHARPENING, "\033[90mSword\033[0m Sharpening", "(ATK + 10% [At Least + 5])", 10, 9);
+Upgrade UpgArcanaBurst(ARCBURST, "\033[94mArcana\033[0m Burst", "(MAGIC + 10% [At Least + 5])", 10, 9);
+Upgrade UpgArmorReinforcement(ARMORUP, "\033[90mArmor\033[0m Reinforcement", "(DEF + 10% [At Least + 3])", 10, 9);
 Upgrade UpgBetterSleightofHand(SLEIGHTOFHAND, "Better \033[95mSleight of Hand\033[0m", "(Increases CRIT% [+5%])", 10, 9);
 Upgrade UpgLighterBoots(LIGHTBOOTS, "\033[91mLighter\033[0m Boots", "(Increases DODGE% [+4%])", 10, 9);
 Upgrade UpgFullHeal(FULLHEAL, "\033[92mFULL HEAL\033[0m", "(Fully Heals HP, MANA & Status Effects)", 8, 9);
 Upgrade UpgWorseTemper(TEMPERBAD, "Worse \033[31mTemper\033[0m", "(Increases CritDamage [+20%])", 8, 9);
-Upgrade UpgFourLeafClover(LUCKYCLOVER, "Four Leaf \033[92mClover\033[0m", "(Earn More XP [+5%])", 6, 9);
+Upgrade UpgFourLeafClover(LUCKYCLOVER, "Four Leaf \033[92mClover\033[0m", "(Earn More XP [+10%])", 6, 9);
 Upgrade UpgEtherealBreath(ETHEREAL, "\033[94mEthereal\033[0m Breath", "(+3 MAX Mana)", 10, 9);
+Upgrade UpgSpellToken(STOKEN, "\033[95mSpell Token\033[0m", "(+1 Spell Token)", 15, 9);
 
 //- Upgrade Effects - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 
@@ -2042,6 +2164,10 @@ Upgrade UpgradeGetRandom(){
 
         case 10:
         return UpgEtherealBreath;
+        break;
+
+        case 11:
+        return UpgSpellToken;
         break;
     }
     return NoUpgrade;
