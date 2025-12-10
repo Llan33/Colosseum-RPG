@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string>
+#include <vector>
+#include <algorithm>
 #include <Windows.h>
 #include "mmsystem.h"
 
@@ -14,6 +16,9 @@ using namespace std;
 
 //- GLOBAL VARIABLES - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 
+const int ChampionWave = 6;
+const int KingFloor = 3;
+
 int Chance, Damage;
 int WaveRound = 1, TotalRound = 1, Wave = 1, Floor = 0;
 bool PlayerTurn;
@@ -21,6 +26,24 @@ bool GameOver = false, ExitGame = false;
 
     //Event Variables (Global)
     bool PrisonLoreCheck = false;
+
+
+
+
+enum BossEffects{
+    MoreHP,
+    MoreATK,
+    MoreDEF,
+    MoreCRIT,
+    MoreDODGE,
+    MoreAllStats,
+    RegenHP,
+    GoldThief,
+    StatusImmunity,
+    ReviveOnce
+};
+vector<BossEffects> MiniBossEffects = {MoreHP,MoreATK,MoreDEF,MoreCRIT,MoreDODGE,MoreAllStats,RegenHP,GoldThief,StatusImmunity,ReviveOnce};
+BossEffects CurrentBossEffect;
 
 //- General Functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 void clear(){
@@ -92,6 +115,12 @@ void ScreenFlash(int FlashLoops){
         usleep(50000);
     }
     sleep(1);
+}
+
+void BossEffectsReset(){
+    MiniBossEffects.clear();
+    MiniBossEffects = {MoreHP,MoreATK,MoreDEF,MoreCRIT,MoreDODGE,MoreAllStats,RegenHP,GoldThief,StatusImmunity,ReviveOnce};
+    random_shuffle(MiniBossEffects.begin(), MiniBossEffects.end());
 }
 //- Text Icons - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 string XX(){
@@ -501,6 +530,296 @@ void LevelUPAnim(){
 
 }
 
+void SlashAnimSparklySprites(int sprite, int interval, string color, bool cutscene){
+    clear();
+    string spacing;
+
+    if (cutscene == true){
+        spacing = "\t\t\t\t\t\t\t";
+        cout << color << "\n\n\n\n\n\n";
+    }else{
+        spacing = "\t";
+        cout << color << "\n\n\n";
+    }
+
+    switch (sprite){
+        case 1:
+        cout << spacing << "..                                         " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "   +                                       " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        break;
+        case 2:
+        cout << spacing << "......                                     " << endl;
+        cout << spacing << "   .''         +                           " << endl;
+        cout << spacing << "  -+-                                      " << endl;
+        cout << spacing << "   '                                       " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        break;
+        case 3:
+        cout << spacing << "......         .                           " << endl;
+        cout << spacing << "   '''''''''''-+-:::::::::::::::..         " << endl;
+        cout << spacing << " -   -         '            ''''''':::. +  " << endl;
+        cout << spacing << "   .                                .:::   " << endl;
+        cout << spacing << "                          .......::::::'   " << endl;
+        cout << spacing << "       .::::::::::::::::::''''''''         " << endl;
+        cout << spacing << "    ''''''''''''''''''''                   " << endl;
+        break;
+        case 4:
+        cout << spacing << "   ..          '                           " << endl;
+        cout << spacing << "     ''''''''-   -::::::::::::::..      .  " << endl;
+        cout << spacing << "-     -        .            ''''''':::.-+- " << endl;
+        cout << spacing << "                                    .:::'  " << endl;
+        cout << spacing << "   '                      .......::::::'   " << endl;
+        cout << spacing << "      .:::::::::::::::::::''''''''         " << endl;
+        cout << spacing << "   '''''''''''''''''''''                   " << endl;
+        break;
+        case 5:
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "             -'':::-:::::::::::..       '  " << endl;
+        cout << spacing << "                            ''''''':::-   -" << endl;
+        cout << spacing << "                '                   .:::.  " << endl;
+        cout << spacing << "           +              .......::::::'   " << endl;
+        cout << spacing << "    .:::::::::::::::::::::''''''''         " << endl;
+        cout << spacing << "  ''''''''''''''''''''''                   " << endl;
+        break;
+        case 6:
+        cout << spacing << "                                        .  " << endl;
+        cout << spacing << "                       ::::::::..          " << endl;
+        cout << spacing << "                            '''''''::-.    -" << endl;
+        cout << spacing << "           .                        .:::.  " << endl;
+        cout << spacing << "          -+-             .......::::::''  " << endl;
+        cout << spacing << "   .:::::::'::::::::::::::''''''''         " << endl;
+        cout << spacing << " '''''''''''''''''''''''                   " << endl;
+        break;
+        case 7:
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "           '             +          ''::.  " << endl;
+        cout << spacing << "         -   -            .......::::::'   " << endl;
+        cout << spacing << "   .:::::::.::::::::::::::''''''''         " << endl;
+        cout << spacing << " '''''''''''''''''''''''                   " << endl;
+        break;
+        case 8:
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "           .             .                 " << endl;
+        cout << spacing << "                        -+-                " << endl;
+        cout << spacing << "        -     -          '.......::::''    " << endl;
+        cout << spacing << "   .::::::: ::::::::::::::''''''''         " << endl;
+        cout << spacing << " '''''''''''''''''''''''                   " << endl;
+        break;
+        case 9:
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                         '                 " << endl;
+        cout << spacing << "                       -   -               " << endl;
+        cout << spacing << "       +                 .......           " << endl;
+        cout << spacing << "   .::::::::::::::::::::::'' +             " << endl;
+        cout << spacing << " '''''''''''''''''''''''                   " << endl;
+        break;
+        case 10:
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                         .                 " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "       .              -     -              " << endl;
+        cout << spacing << "      -+-                    .             " << endl;
+        cout << spacing << "   .:::'::::::::::::''   '  -+-            " << endl;
+        cout << spacing << " '''''''''''''''''           '             " << endl;
+        break;
+        case 11:
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "       '                                   " << endl;
+        cout << spacing << "     -   -                   '             " << endl;
+        cout << spacing << "   .:::.:::::              -   -           " << endl;
+        cout << spacing << " '''''''                     .             " << endl;
+        break;
+        case 12:
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "       .                                   " << endl;
+        cout << spacing << "                             .             " << endl;
+        cout << spacing << "    -     -                                " << endl;
+        cout << spacing << "   .:'                    -     -          " << endl;
+        cout << spacing << " '''   '                                   " << endl;
+        break;
+    }
+    cout << "\033[0m";
+    usleep(interval);
+}
+void SlashAnimSprites(int sprite, int interval, string color, bool cutscene){
+    clear();
+    string spacing;
+
+    if (cutscene == true){
+        spacing = "\t\t\t\t\t\t\t";
+        cout << color << "\n\n\n\n\n\n";
+    }else{
+        spacing = "\t";
+        cout << color << "\n\n\n";
+    }
+
+    switch (sprite){
+        case 1:
+        cout << spacing << "..                                         " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        break;
+        case 2:
+        cout << spacing << "......                                     " << endl;
+        cout << spacing << "    ''                                     " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        break;
+        case 3:
+        cout << spacing << "......                                     " << endl;
+        cout << spacing << "    ''''''''''::::::::::::::::::..         " << endl;
+        cout << spacing << "                            ''''''':::.    " << endl;
+        cout << spacing << "                                    .:::.  " << endl;
+        cout << spacing << "                          .......::::::'   " << endl;
+        cout << spacing << "       .::::::::::::::::::''''''''         " << endl;
+        cout << spacing << "    ''''''''''''''''''''                   " << endl;
+        break;
+        case 4:
+        cout << spacing << "    .                                     " << endl;
+        cout << spacing << "     '''''''''::::::::::::::::::..         " << endl;
+        cout << spacing << "                            ''''''':::.    " << endl;
+        cout << spacing << "                                    .:::.  " << endl;
+        cout << spacing << "                          .......::::::'   " << endl;
+        cout << spacing << "      .:::::::::::::::::::''''''''         " << endl;
+        cout << spacing << "   '''''''''''''''''''''                   " << endl;
+        break;
+        case 5:
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "             ''':::::::::::::::..          " << endl;
+        cout << spacing << "                            ''''''':::.    " << endl;
+        cout << spacing << "                                    .:::.  " << endl;
+        cout << spacing << "                          .......::::::'   " << endl;
+        cout << spacing << "    .:::::::::::::::::::::''''''''         " << endl;
+        cout << spacing << "  ''''''''''''''''''''''                   " << endl;
+        break;
+        case 6:
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                       ::::::::..          " << endl;
+        cout << spacing << "                            ''''''':::.    " << endl;
+        cout << spacing << "                                    .:::.  " << endl;
+        cout << spacing << "                          .......::::::'   " << endl;
+        cout << spacing << "   .::::::::::::::::::::::''''''''         " << endl;
+        cout << spacing << " '''''''''''''''''''''''                   " << endl;
+        break;
+        case 7:
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                    ''::.  " << endl;
+        cout << spacing << "                          .......::::::'   " << endl;
+        cout << spacing << "   .::::::::::::::::::::::''''''''         " << endl;
+        cout << spacing << " '''''''''''''''''''''''                   " << endl;
+        break;
+        case 8:
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                          .......::::''    " << endl;
+        cout << spacing << "   .::::::::::::::::::::::''''''''         " << endl;
+        cout << spacing << " '''''''''''''''''''''''                   " << endl;
+        break;
+        case 9:
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                          ......           " << endl;
+        cout << spacing << "   .::::::::::::::::::::::''               " << endl;
+        cout << spacing << " '''''''''''''''''''''''                   " << endl;
+        break;
+        case 10:
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "   .::::::::::::::::''                     " << endl;
+        cout << spacing << " '''''''''''''''''                         " << endl;
+        break;
+        case 11:
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "   .:::::::::                              " << endl;
+        cout << spacing << " '''''''                                   " << endl;
+        break;
+        case 12:
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "                                           " << endl;
+        cout << spacing << "   .:'                                     " << endl;
+        cout << spacing << " '''                                       " << endl;
+        break;
+    }
+    cout << "\033[0m";
+    usleep(interval);
+}
+void SlashAnim(string color, int slowness, bool sparkly, bool Cutscene){
+    if (sparkly == true){
+        SlashAnimSparklySprites(1,slowness,color,Cutscene);
+        SlashAnimSparklySprites(2,slowness/2,color,Cutscene);
+        SlashAnimSparklySprites(3,slowness/2,color,Cutscene);
+        SlashAnimSparklySprites(4,slowness/2,color,Cutscene);
+        SlashAnimSparklySprites(5,slowness/2,color,Cutscene);
+        SlashAnimSparklySprites(6,slowness/2,color,Cutscene);
+        SlashAnimSparklySprites(7,slowness/2,color,Cutscene);
+        // SlashAnimSprites(8,slowness/2,color);
+        SlashAnimSparklySprites(9,slowness/2,color,Cutscene);
+        SlashAnimSparklySprites(10,slowness/2,color,Cutscene);
+        SlashAnimSparklySprites(11,slowness/2,color,Cutscene);
+        SlashAnimSparklySprites(12,slowness/2,color,Cutscene);
+    }else{
+        SlashAnimSprites(1,slowness,color,Cutscene);
+        SlashAnimSprites(2,slowness/2,color,Cutscene);
+        SlashAnimSprites(3,slowness/2,color,Cutscene);
+        SlashAnimSprites(4,slowness/2,color,Cutscene);
+        SlashAnimSprites(5,slowness/2,color,Cutscene);
+        SlashAnimSprites(6,slowness/2,color,Cutscene);
+        SlashAnimSprites(7,slowness/2,color,Cutscene);
+        // SlashAnimSprites(8,slowness/2,color);
+        SlashAnimSprites(9,slowness/2,color,Cutscene);
+        SlashAnimSprites(10,slowness/2,color,Cutscene);
+        SlashAnimSprites(11,slowness/2,color,Cutscene);
+        SlashAnimSprites(12,slowness/2,color,Cutscene);
+    }
+    clear();
+}
+void Swoon(string color){
+    sleep(1);
+    SlashAnimSprites(3,1000000,color, false);
+    sleep(2);
+    clear();
+    cout << "\n\n\n\n\t\t\033[1;91m SWOON";
+    sleep(1);
+    clear();
+}
+
 void CollosseumRollSprites(int sprite, int interval){
 
 
@@ -804,7 +1123,26 @@ void ChampionIncomingUI(){
         cout << "\t'     |     |____|  |____    |       |____|  |____|  | \\  / |  |____/   |  |      | | \\  |  ." << endl;
         cout << "\t'     |     |    |  |        |       |    |  |    |  |  \\/  |  |        |  |      | |  \\ |  ." << endl;
         cout << "\t'     |    _|_  _|_ |____     \\____ _|_  _|_ |    | _|_    _|_ |      __|__ \\____/ _|_  \\|  ." << endl;
-        cout << "\t+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +" << endl;
+        cout << "\t+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\033[0m" << endl;
+        usleep(40000);
+        clear();
+        usleep(40000);
+    }
+}
+void WitchIncomingUI(){
+    for (int l = 0; l < 18; l++){
+        cout << "\n\n\n";
+        if (l % 2 == 0){
+            cout << "\033[1;95m";
+        }else{
+            cout << "\033[1;96m";
+        }
+        cout << "\t\t+- _______-___ -___-_____- -___ - -___-_____-_______- ____-___ -___- -+" << endl;
+        cout << "\t\t'     |     |    |  |        |      |    |      |    /      |    |    ." << endl;
+        cout << "\t\t'     |     |____|  |____    |  /\\  |    |      |   |       |____|    ." << endl;
+        cout << "\t\t'     |     |    |  |        | /  \\ |    |      |   |       |    |    ." << endl;
+        cout << "\t\t'     |    _|_  _|_ |____    |/    \\|  __|__    |    \\____ _|_  _|_   ." << endl;
+        cout << "\t\t+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\033[0m" << endl;
         usleep(40000);
         clear();
         usleep(40000);
@@ -1092,6 +1430,53 @@ void ColosseumRoundBar(int WaveRound, int Wave, int Floor){
                     cout << "    Round " << Yellow("1") << "        Round " << Yellow("2") << "        Round " << Yellow("3") << "        Round " << Yellow("4") << "          \033[1;93mKING\033[0m" << endl;
         break;
     }
+    string EffectShow;
+    switch (CurrentBossEffect){
+        case MoreHP://[     BOSS    ]
+        EffectShow = "   [+50% \033[1;92mHP\033[0m]";
+        break;
+
+        case MoreATK:
+        EffectShow = "   [+50% \033[1;91mATK\033[0m]";
+        break;
+
+        case MoreDEF:
+        EffectShow = "    [x2 \033[1;90mDEF\033[0m]";
+        break;
+
+        case MoreCRIT:
+        EffectShow = "  [+20% \033[1;91mCRIT%\033[0m]";
+        break;
+
+        case MoreDODGE:
+        EffectShow = "  [+20% \033[1;93mDODGE\033[0m]";
+        break;
+
+        case MoreAllStats:
+        EffectShow = "[\033[1;96mAll Stat Boost\033[0m]";
+        break;
+
+        case GoldThief:
+        EffectShow = "  [\033[1;93mGold Thief\033[0m]";
+        break;
+
+        case RegenHP:
+        EffectShow = " [15% \033[1;92mHP Regen\033[0m]";
+        break;
+
+        case StatusImmunity:
+        EffectShow = "[\033[1;96mStatus Immunity\033[0m]";
+        break;
+
+        case ReviveOnce:
+        EffectShow = "   [\033[1;90m ? ? ? \033[0m]";
+        break;
+    }
+    
+    if (Wave != 6 && Floor != 3){
+        cout << "                                                           " << EffectShow << endl;
+    }
+    
 
 }
 void ColosseumRound(int WaveRound, int Wave, int Floor){
@@ -1128,17 +1513,18 @@ void ColosseumRound(int WaveRound, int Wave, int Floor){
         if (Wave == 6){
             cout << "\033[1;95m"<< "             ~~~~~ ~~~~ ~~~ ~~ ~FINAL WAVE~ ~~ ~~~ ~~~~ ~~~~~" << endl;
         }else{
-            cout << RandColor() << "             ~~~~~ ~~~~ ~~~ ~~ ~ WAVE " << Wave << " ~ ~~ ~~~ ~~~~ ~~~~~" << endl;
+            cout << RandColor() << "            ~~~~~ ~~~~ ~~~ ~~ ~ WAVE " << Wave << "/"<< ChampionWave <<" ~ ~~ ~~~ ~~~~ ~~~~~" << endl;
         }
     }else if (Floor == 3){
         cout << "\033[1;93m"<<     "             ----- ---- --- -- |\\ KING'S FLOOR /| -- --- ---- -----" << endl;
     }else {
-        cout << RandColor() <<     "             ----- ---- --- -- - FLOOR " << Floor << " - -- --- ---- -----" << endl;
+        cout << RandColor() <<     "            ----- ---- --- -- - FLOOR " << Floor << "/"<< KingFloor <<" - -- --- ---- -----" << endl;
     }
 
     ColosseumImage(Floor);
 
     ColosseumRoundBar(WaveRound, Wave, Floor);
+
 
     usleep(300000);
     cout << endl << "Ready to Fight?" << endl;
@@ -1231,6 +1617,36 @@ void BattlegateAnim(){
         clear();
     }
 
+}
+
+void FloorDoor(){
+    cout << "                        \033[47m             \033[0m" << endl;
+    cout << "                       \033[47m               \033[0m" << endl;
+    cout << "                      \033[47m                 \033[0m" << endl;
+    cout << "                     \033[47m                   \033[0m" << endl;
+    cout << "                    \033[47m                     \033[0m" << endl;
+    cout << "                   \033[47m                       \033[0m" << endl;
+    cout << "                  \033[47m                         \033[0m   " << endl;
+    cout << "                  \033[47m                         \033[0m   " << endl;
+    cout << "                  \033[47m                         \033[0m   " << endl;
+    cout << "                  \033[47m                         \033[0m   " << endl;
+    cout << "                  \033[47m                         \033[0m   " << endl;
+    cout << "                  \033[47m                         \033[0m   " << endl;
+    cout << "                  \033[47m                         \033[0m" << endl;
+    cout << " _________________\033[47m                         \033[0m________________" << endl;
+    cout << "                  :::::::::::::::::::::::::" << endl;
+    cout << "_________         :::::::::::::::::::::::::         _________" << endl;
+    cout << "        /         :::::::::::::::::::::::::         \\" << endl;
+    cout << "        \033[47m                                             \033[0m" << endl;
+    cout << "        \033[47m_____________________________________________\033[0m" << endl;
+    cout << "        /         :::::::::::::::::::::::::         \\" << endl;
+    cout << "       /           :::::::::::::::::::::::           \\" << endl;
+    cout << "_______\033[47m                                               \033[0m_______" << endl;
+    cout << "       \033[47m_______________________________________________\033[0m" << endl;
+    cout << "       /              :::::::::::::::::              \\" << endl;
+    cout << "      /                :::::::::::::::                \\" << endl;
+    cout << "      \033[47m                                                 \033[0m" << endl;
+    cout << "      \033[47m_________________________________________________\033[0m" << endl;
 }
 
 void D6Roll(){
@@ -1641,6 +2057,107 @@ void ArmageddonAnim(string color, int tmult){
 }
 
 
+void KingsAppearAnim(){
+  string Image[]{// \033[0m \033[47m
+        "",
+        "",
+        "",
+        "                   \033[47m|      |\033[0m                                       \033[47m|        |\033[0m                                       \033[47m|      |\033[0m         ",
+        "                  \033[47m|         |\033[0m                                   \033[47m|            |\033[0m                                   \033[47m|         |\033[0m       ",
+        "                 \033[47m|            |\033[0m                               \033[47m|                |\033[0m                               \033[47m|            |\033[0m      ",
+        "                \033[47m|               |\033[0m                           \033[47m|                    |\033[0m                           \033[47m|               |\033[0m     ",
+        "               \033[47m|                  |\033[0m                       \033[47m|                        |\033[0m                       \033[47m|                  |\033[0m        ",
+        "              \033[47m|                     |\033[0m                   \033[47m|                            |\033[0m                   \033[47m|                     |\033[0m       ",
+        "             \033[47m|                        |\033[0m               \033[47m|                                |\033[0m               \033[47m|                        |\033[0m      ",
+        "            \033[47m|                           |\033[0m           \033[47m|                                    |\033[0m           \033[47m|                           |\033[0m     ",
+        "           \033[47m|                            |\033[0m           \033[47m|                                    |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|                                    |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|               \033[0;93m|\\/\\/|\033[0;47m               |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|               \033[0;93m|    |\033[0;47m___            |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|       \033[0;90m.''-'-.- \033[91m.''. \033[0m\\_/\033[90m'-''.\033[0;47m       |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|        \033[0;90m'.\033[91m':''''    '''':'\033[90m.'\033[0;47m        |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|          \033[0;90m: \033[91m:          : \033[90m:\033[93m|VV|\033[0;47m      |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|          \033[0;90m:\033[91m :  \033[93m |VV|  \033[91m : \033[90m:\033[0m:''::\033[0;47m     |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|          \033[0;90m: \033[91m:\033[0m  ::'':: \033[91m : \033[90m: \033[0m  |'\033[0;47m     |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|          \033[0;90m: \033[91m:\033[0m  |    | \033[91m : \033[90m:\033[0m__/\033[0;47m       |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|          \033[0;90m: \033[91m:\033[0m   \\__/  \033[91m : \033[90m:-\033[0m|\033[0;47m_       |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|          \033[0;90m: \033[91m: \033[91m__\033[0m/\033[93m--\033[0m\\\033[91m__ \033[91m: \033[90m:\033[94m/  \\\033[0;47m      |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|          \033[0;90m: \033[91m:\033[91m/  |\033[93m\\/\033[91m|  \\: \033[4;90m:\033[0m_\033[94m_\\ \\\033[0;47m     |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|          \033[0;90m: \033[91m/_/ |\033[93m/\\\033[91m| \\_\\\033[0m\\_.-\033[94m---'\033[0;47m    |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|          \033[0m_/ /\033[91m| |\033[93m\\/\033[91m| |\033[0m\\ \\_ \033[94m|\033[0;47m        |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|        \033[0m.' .' \033[91m| |\033[93m/\\\033[91m| |\033[0m '. '.\033[0;47m        |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|       \033[0m\033[90m:\033[0m\\_/\033[90m.: \033[91m/_/--\\_\\\033[90m :.\033[0m\\_/\033[90m:\033[0;47m       |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m|        \033[0m\033[90m:  :\033[93m /        \\ \033[90m:  :\033[0;47m        |\033[0m           \033[47m|                            |\033[0m    ",
+        "           \033[47m|                            |\033[0m           \033[47m| _____..\033[0m\033[90m:  :\033[93m|          |\033[90m:  :\033[0;47m.._____ |\033[0m           \033[47m|                            |\033[0m    ",
+                       "           \033[47m|                  __________|\033[0m___--------:::::::::\033[90m:  :\033[93m'.-'-..-'-.'\033[90m:  :\033[0m:::::::::--------___\033[47m|__________                  |\033[0m    ",
+                       "          _\033[47m|___________\033[0m::::::::::::::::::           :::::::::\033[90m:  '\033[0m| |\033[91m      \033[0m| |\033[90m'  :\033[0m\\\033[4m::\033[0m::::::           ::::::::::::::::::\033[47m___________|\033[0m_   ",
+        "   ------- ::::::::::::::::::::::::::::::           :::::::::\033[90m:..'\033[0m| |\033[91m''''''\033[0m| |\033[90m'..:\033[0m___::::::           :::::::::::::::::::::::::::::: -------",
+        "           ::::::::::::::::::::::::::::::           :::::::::   /__/      \\__\\    ..::::::           ::::::::::::::::::::::::::::::     ",
+        "           ::::::::::::::::::::::::::::::           ::::::::::                  .:::::::::           ::::::::::::::::::::::::::::::       ",
+        "           ::::::::::::::::::::::::::::::           :::::::::::                :::::::::::           ::::::::::::::::::::::::::::::  ",
+        "           ::::::::::::::::::::::::::::::           ::::::::::::              ::::::::::::           ::::::::::::::::::::::::::::::  ",
+        "           :::::::::::::::::::::::::::::'           '::::::::::::            ::::::::::::'           ':::::::::::::::::::::::::::::    ",
+        "           '::::::::::::::::::::::::''                 '':::::::::...    ...:::::::::''                 ''::::::::::::::::::::::::'    ",
+        "             '::::::::::::::::::''                         ''::::::::....::::::::''                         ''::::::::::::::::::'",
+        "               '::::::::::::''                                 ''::::::::::::''                                 ''::::::::::::'",
+        "                 '::::::''                                         ''::::''                                         ''::::::'",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+    };
+
+
+    for (int l = 0; l < size(Image)-1-41; l++){
+        clear();
+        for (int i = size(Image)-l-1-41; i < size(Image)-l-1; i++){
+            cout << Image[i] << endl;
+        }
+        usleep(10000 + 3000*l);
+    }
+    sleep(2);
+}
+
+
 void ChampionAppearAnimSprites(int sprite, int interval){
     clear();
     cout << "\033[1;95m";
@@ -1949,4 +2466,379 @@ void ChampionAppearAnim(){
     ChampionAppearAnimSprites(10,100000);
     ChampionAppearAnimSprites(11,100000);
     ChampionAppearAnimSprites(12,100000);
+}
+
+void EpilepsyWarning(bool prank){
+    cout << "\n\n\n\n\n";
+    cout << "\t\t\t          / \\      " << endl;
+    cout << "\t\t\t         /   \\     " << endl;
+    cout << "\t\t\t        /  \033[91m|\033[0m  \\    " << endl;
+    cout << "\t\t\t       /   \033[91m|\033[0m   \\   " << endl;
+    cout << "\t\t\t      /    \033[91m|\033[0m    \\  " << endl;
+    cout << "\t\t\t     /     \033[91m.\033[0m     \\ " << endl;
+    cout << "\t\t\t     '''''''''''''  " << endl;
+    cout << "\t\t\t\033[91m        WARNING  \033[0m" << endl;
+    cout << "\t\t\t    FLASHING LIGHTS" << endl;
+    cout << "\t \033[90m(If you have Epilectic Seizures, back off or play carefully)\033[0m" << "\n\n\n";
+
+    EnterShort();
+
+    if (prank == true){
+        for (int l = 0;l < 75;l++){
+            if (l % 2 == 0){
+                cout << "\033[30;47m";
+                clear();
+                cout << "\033[30;47m";
+            }else{
+                cout << "\033[0m";
+                clear();
+                cout << "\033[0m";
+            }
+            cout << "\n\n\n\n\n";
+            cout << " __     ______  _    _   _    _     __      ________   ____  ______ ______ _   _  __          __     _____  _   _ ______ _____  " << endl;
+            cout << " \\ \\   / / __ \\| |  | | | |  | |   /\\ \\    / /  ____| |  _ \\|  ____|  ____| \\ | | \\ \\        / /\\   |  __ \\| \\ | |  ____|  __ \\ " << endl;
+            cout << "  \\ \\_/ / |  | | |  | | | |__| |  /  \\ \\  / /| |__    | |_) | |__  | |__  |  \\| |  \\ \\  /\\  / /  \\  | |__) |  \\| | |__  | |  | |" << endl;
+            cout << "   \\   /| |  | | |  | | |  __  | / /\\ \\ \\/ / |  __|   |  _ <|  __| |  __| | . ` |   \\ \\/  \\/ / /\\ \\ |  _  /| . ` |  __| | |  | |" << endl;
+            cout << "    | | | |__| | |__| | | |  | |/ ____ \\  /  | |____  | |_) | |____| |____| |\\  |    \\  /\\  / ____ \\| | \\ \\| |\\  | |____| |__| |" << endl;
+            cout << "    |_|  \\____/ \\____/  |_|  |_/_/    \\_\\/   |______| |____/|______|______|_| \\_|     \\/  \\/_/    \\_\\_|  \\_\\_| \\_|______|_____/ " << endl;
+            usleep(25000);
+        }
+    }
+
+    clear();
+}
+
+void TitleScreenAnim(){
+    clear();
+    usleep(100000);
+    cout << endl;
+    cout << "    ______  |\\	      _____   __      __                      _    _  __   _    _   _______     " << endl; usleep(30000);
+    cout << "   /  ____\\ | |   ---/ ___ \\-\\  \\--  /  / _____        ___   | | / / |  | | \\  | | |  _____\\  " << endl; usleep(50000);
+    cout << "---- /____  | |     / /___\\ \\ \\  \\  /  /    |   |   | |      | |/ /  |  | |  \\ | | | | ____    " << endl; usleep(70000);
+    cout << "  \\_____  \\ | |     |  ___  |  \\  \\/  /     |   |---| |--    |   |   |  | |   \\| | | | \\_  |  " << endl; usleep(90000);
+    cout << "   ____/ ---| |--___| |   | |-- \\    /      |   |   | |___   | |\\ \\  |  | | |\\   | | |___| |    " << endl; usleep(110000);
+    cout << "  /______/  |______/|_|   |_|    /  /                        |_| \\_\\ |  | |_| \\__| |___   _|     " << endl; usleep(130000);
+    cout << "                                /  /                                _|  |_             \\ |         " << endl; usleep(140000);
+    cout << "                               /  /                                \033[33m |\033[31m'\033[35m'\033[36m'\033[32m'\033[33m|  \033[0m            ||          " << endl; usleep(150000);
+    cout << "                              /__/                                \033[33m  |/\\/\\| \033[0m             ||        " << endl; usleep(160000);
+    cout << "                                                                                        ||         " << endl; usleep(170000);
+    cout << "                                                                         _  _ __ _______||_______ __ _  _ " << endl; usleep(250000);
+    cout << "        .-------.              .-------.              .-------.         +--------------------------------+           " << endl;
+    cout << "        |       |              |       |              |       |                    (4) Options            " << endl;
+    cout << "        | Main  |              |2Player|              | Extras|         *--------------------------------*" << endl; 
+    cout << "        | Story |              |Versus |              |       |                    (5) Credits            " << endl;
+    cout << "        |       |              |       |              |       |         *--------------------------------*" << endl;
+    cout << "        `-------`              `-------`              `-------`                     (0)  Quit             " << endl;
+    cout << "           (1)                    (2)                    (3)            +--------------------------------+" << endl;
+    cout << "                                                                        " << endl;
+}
+
+
+void THEENDscreenSprites(int sprite, int interval, string color){
+    clear();
+    string spacing = "\t";
+    cout << color << "\n\n\n\n";
+    switch (sprite){
+        case 1:
+        cout << spacing << " ____________   __      __   __________       __________   ___     __   ________" << endl;
+        cout << spacing << "|____    ____| |  |    |  | |   _______|     |   _______| |   \\   |  | |   ___  \\ " << endl;
+        cout << spacing << "     |  |      |  |    |  | |  |             |  |         |    \\  |  | |  |   \\  \\  " << endl;
+        cout << spacing << "     |  |      |  |____|  | |  |______       |  |______   |  \\  \\ |  | |  |    |  |" << endl;
+        cout << spacing << "     |  |      |   ____   | |   ______|      |   ______|  |  |\\  \\|  | |  |    |  |" << endl;
+        cout << spacing << "     |  |      |  |    |  | |  |             |  |         |  | \\  \\  | |  |    |  |" << endl;
+        cout << spacing << "     |  |      |  |    |  | |  |_______      |  |_______  |  |  \\    | |  |___/  /" << endl;
+        cout << spacing << "     |__|      |__|    |__| |__________|     |__________| |__|   \\___| |________/" << endl;
+        break;
+        case 2:
+        cout << spacing << " ............   ..      ..   ..........       ..........   ...     ..   ........" << endl;
+        cout << spacing << "|....    ....| |  |    |  | |   .......|     |   .......| |   \\   |  | |   ...  \\ " << endl;
+        cout << spacing << "     |  |      |  |    |  | |  |             |  |         |    \\  |  | |  |   \\  \\  " << endl;
+        cout << spacing << "     |  |      |  |....|  | |  |......       |  |......   |  \\  \\ |  | |  |    |  |" << endl;
+        cout << spacing << "     |  |      |   ....   | |   ......|      |   ......|  |  |\\  \\|  | |  |    |  |" << endl;
+        cout << spacing << "     |  |      |  |    |  | |  |             |  |         |  | \\  \\  | |  |    |  |" << endl;
+        cout << spacing << "     |  |      |  |    |  | |  |.......      |  |.......  |  |  \\    | |  |...'  /" << endl;
+        cout << spacing << "     |..|      |..|    |..| |..........|     |..........| |..|   '...| .........'" << endl;
+        break;
+        case 3:
+        cout << spacing << " ............   ..      ..   ..........       ..........   ...     ..   ........" << endl;
+        cout << spacing << ":....    ....: :  :    :  : :   .......:     :   .......: :   '   :  : :   ...  ' " << endl;
+        cout << spacing << "     :  :      :  :    :  : :  :             :  :         :    '  :  : :  :   '  '  " << endl;
+        cout << spacing << "     :  :      :  :....:  : :  :......       :  :......   :  '  ' :  : :  :    :  :" << endl;
+        cout << spacing << "     :  :      :   ....   : :   ......:      :   ......:  :  :'  ':  : :  :    :  :" << endl;
+        cout << spacing << "     :  :      :  :    :  : :  :             :  :         :  : '  '  : :  :    :  :" << endl;
+        cout << spacing << "     :  :      :  :    :  : :  :.......      :  :.......  :  :  '    : :  :...'  '" << endl;
+        cout << spacing << "     :..:      :..:    :..: :..........:     :..........: :..:   '...: .........'" << endl;
+        break;
+        case 4:
+        cout << spacing << "  . . . . . .   .        .   . . . . .        . . . . .    . .      .    . . . ." << endl;
+        cout << spacing << "'. .     . . ' '  '    '  ' '   . . . .'     '   . . . .' '   '   '  ' '   . .  ' " << endl;
+        cout << spacing << "     '  '      '  '    '  ' '  '             '  '         '    '  '  ' '  '   '  '  " << endl;
+        cout << spacing << "     '  '      '  '. . '  ' '  '. . .        '  '. . .    '  '  ' '  ' '  '    '  '" << endl;
+        cout << spacing << "     '  '      '    . .   ' '    . . .'      '    . . .'  '  ''  ''  ' '  '    '  '" << endl;
+        cout << spacing << "     '  '      '  '    '  ' '  '             '  '         '  ' '  '  ' '  '    '  '" << endl;
+        cout << spacing << "     '  '      '  '    '  ' '  '. . . .      '  '. . . .  '  '  '    ' '  '. .'  ' " << endl;
+        cout << spacing << "     ' .'      '. '    ' .' ' . . . . .'     ' . . . . .' '. '   '. .' . . . . .'  " << endl;
+        break;
+        case 5:
+        cout << spacing << "  .   .   .     .        .     .   .            .   .      .        .    .   .  " << endl;
+        cout << spacing << "'  .       . '              '   .   .  '     '   .   .  '     '   '  '       .  ' " << endl;
+        cout << spacing << "               '  '    '  '                               '            '  '         " << endl;
+        cout << spacing << "     '  '            .      '  '  .          '  '  .         '  ' '  '         '  '" << endl;
+        cout << spacing << "               '    .     '        .  '             .  '  '   '        '  '        " << endl;
+        cout << spacing << "     '  '                   '  '             '  '            '    '  '         '  '" << endl;
+        cout << spacing << "               '  '    '  '     .   .            .   .    '     '      '  '  .     " << endl;
+        cout << spacing << "     '  '       .        .  '   .   .  '     '   .   .  '  . '    .  '   .   .  '  " << endl;
+        break;
+    }
+    cout << "\033[0m";
+    usleep(interval);
+}
+void THEENDscreen(string color){
+    THEENDscreenSprites(1,3500000,color);
+    THEENDscreenSprites(2,100000,color);
+    THEENDscreenSprites(3,100000,color);
+    THEENDscreenSprites(4,100000,color);
+    THEENDscreenSprites(5,100000,color);
+    clear();
+    sleep(1);
+}
+
+void Credits(){
+    string Spacing = "\t  ";
+    string Credits[] = {
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        " -'-.-'-.-'-.-'-.-'- \033[1;93mSLAY THE KING\033[0m -'-.-'-.-'-.-'-.-'-  ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "              -'-.-'- \033[1;93mPROGRAMING\033[0m -'-.-'-                ",
+        "                                                        ",
+        "                   Francisco Sousa                      ",
+        "                                                        ",
+        "                                                        ",
+        "              -'-.- \033[1;91mART & ANIMATION\033[0m -.-'-               ",
+        "                                                        ",
+        "                   Francisco Sousa                      ",
+        "                                                        ",
+        "                                                        ",
+        "-.-'- \033[1;91mART NITPICKING & HELP\033[0m -.-'-                       ",
+        "                                                        ",
+        "         Manuel Sousa          Vasco Franco             ",
+        "                                                        ",
+        "         Joana Coutinho        Tomas Aguiar             ",
+        "                                                        ",
+        "                                                        ",
+        "          -'-.- \033[1;94mSPELLS\033[0m, \033[1;96mITEMS \033[0m& \033[1;95mRELICS \033[0m-.-'-            ",
+        "                                                        ",
+        "             \033[1;91mIgnitus\033[0m - Santiago Ribeira                 ",
+        "                                                        ",
+        "     \033[1;96mVicious \033[1;95mMockery\033[0m - Amelie Pessoa \033[90m(Inspired by D&D)\033[0m  ",
+        "                                                        ",
+        "                                                        ",
+        "             \033[1;93mEgg \033[90mPal\033[0m - Manuel Sousa                     ",
+        "                                                        ",
+        "    \033[1;96mMagica \033[92mCarnation\033[0m - Joana Coutinho                   ",
+        "                                                        ",
+        "                                                        ",
+        "                 \033[90m(The rest were made by Francisco Sousa)\033[0m",
+        "                                                        ",
+        "                                                        ",
+        "                -'-.-'-\033[1;96m MUSIC \033[0m-'-.-'-                   ",
+        "                                                        ",
+        "   All Music used came from the \"Hacking Tracks\" of   ",
+        "       \033[1;90mNieR: \033[1;0mAutomata\033[0m, composed by Keiichi Okabe        ",
+        "                                                        ",
+        "  All rights to the music reserved to \033[1;90mSquar\033[91me E\033[90mnix\033[0m Ltd.  ",
+        "                                                        ",
+        "                                I take no credit for it.",
+        "                                                        ",
+        "                                                        ",
+        "             -'-.-'-\033[1;92m PLAYTESTERS \033[0m-'-.-'-                ",
+        "                                                        ",
+        "    Guilherme Barreiros            Tomas Aguiar         ",
+        "                                                        ",
+        "       Jaime Sousa                Joana Coutinho        ",
+        "                                                        ",
+        "    Santiago Ribeira             Rodrigo Martins        ",
+        "                                                        ",
+        "      Manuel Sousa                                      ",
+        "                                                        ",
+        "                                                        ",
+        "          -'-.-'- \033[1mGAME INSPIRATIONS \033[0m-'-.-'-             \033[1m",
+        "                                                        ",// \033[91m  \033[0;1m
+        "         \033[91mHades\033[0;1m & \033[92mHades 2\033[0;1m           \033[91mBa\033[0;1mla\033[94mtro\033[0;1m              ",
+        "                                                        ",
+        "          \033[33mSlay the Spire\033[0;1m     Delt\033[91ma\033[0;1mrune & Unde\033[91mr\033[0;1mtale      ",
+        "                                                        ",
+        "         \033[90mNieR:\033[0;1m Automata       Final Fantasy VII         ",
+        "                                                        ",
+        "           \033[94mPer\033[96msona \033[0;1m3             \033[91mFire\033[0;1m Emblem            ",
+        "                                                        ",
+        "                                                        \033[0m",
+        "          -'-.-'- \033[1;93mSPECIAL THANKS TO \033[0m-'-.-'-             ",
+        "                                                        ",
+        "         Paulo Leite (For teaching me da wae)           ",
+        "                 \033[93mThe Gladiator Movies\033[0m                   ",
+        "                      My Family                         ",
+        "               Everyone who kept me Hyped               ",
+        "                     Indie Games                        ",
+        "                Everyone in the Credits                 ",
+        "                                                        ",
+        "                                                        ",
+        "            And especially \033[1;93mYOU\033[0m, the Player!             ",
+        "                                                        ",
+        "-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+        "                                                        ",
+
+    };
+    int CreditsSize = 0;
+    int CreditLinesPerScreen = 22;
+
+    while (CreditsSize < size(Credits) - CreditLinesPerScreen + 1){
+        clear();
+        cout << "\n\n";
+        cout << "\t" << "-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-CREDITS-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'" << endl;
+        for(int l = CreditsSize; l < CreditsSize + CreditLinesPerScreen; l++){
+            cout << "\t" << Spacing << Credits[l] << endl;
+        }
+        cout << "\t" << "-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'" << endl;
+        usleep(250000);
+        CreditsSize++;
+    }
+
+    for (int l = CreditLinesPerScreen; l > 0; l--){
+        clear();
+        cout << "\n\n";
+        for(int i = (CreditLinesPerScreen - l) /2; i > 0; i--){
+            cout << endl;
+        }
+        cout << "\t" << "-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-CREDITS-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'" << endl;
+        for(int i = l; i > 0; i--){
+            cout << endl;
+        }
+        cout << "\t" << "-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'-.-'" << endl;
+        usleep(l*7000);
+    }
+
+    for (int l = 0; l <= 30; l++){
+    clear();
+    cout << "\n\n";
+    for(int i = CreditLinesPerScreen /2; i > 0; i--){
+            cout << endl;
+    }
+    cout << "\t";
+    for(int i = 17; i >= 0; i--){
+        if (i == l){
+            cout << "''";
+        }else if (i == l + 1 || i == l - 1){
+            cout << "--";
+        }else if (i == l + 2 || i == l - 2){
+            cout << "..";
+        }else{
+            cout << "__";
+        }
+    }
+    for(int i = 0; i <= 17; i++){
+        if (i == l){
+            cout << "''";
+        }else if (i == l + 1 || i == l - 1){
+            cout << "--";
+        }else if (i == l + 2 || i == l - 2){
+            cout << "..";
+        }else{
+            cout << "__";
+        }
+    }
+    cout << endl << "\t";
+    for(int i = 17; i >= 0; i--){
+        if (i == l){
+            cout << "__";
+        }else if (i == l + 1 || i == l - 1){
+            cout << "--";
+        }else if (i == l + 2 || i == l - 2){
+            cout << "^^";
+        }else{
+            cout << "''";
+        }
+    }
+    for(int i = 0; i <= 17; i++){
+        if (i == l){
+            cout << "__";
+        }else if (i == l + 1 || i == l - 1){
+            cout << "--";
+        }else if (i == l + 2 || i == l - 2){
+            cout << "^^";
+        }else{
+            cout << "''";
+        }
+    }
+    usleep(10000 + (l*6000));
+    }
+
+    clear();
+    cout << "\n\n";
+    for(int i = CreditLinesPerScreen /2; i > 0; i--){
+            cout << endl;
+    }
+    cout << "\t" << "_________________________________\033[4mTHE END\033[0m________________________________" << endl;
+    cout << "\t" << "''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''" << endl;
+    sleep(3);
+    clear();
+    cout << "\n\n";
+    for(int i = CreditLinesPerScreen /2; i > 0; i--){
+            cout << endl;
+    }
+    cout << "\t\033[90m" << "_________________________________\033[4mTHE END\033[0;90m________________________________" << endl;
+    cout << "\t\033[90m" << "''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''\033[0m" << endl;
+    usleep(500000);
+    clear();
+    usleep(500000);
+
+    return;
 }

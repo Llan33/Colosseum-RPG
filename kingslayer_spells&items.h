@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string>
+#include <vector>
+#include <algorithm>
 #include <Windows.h>
 #include "mmsystem.h"
 
@@ -34,8 +36,8 @@ void StatOverflowCheck(Entity& User){
         User.Stat.CRITMULT += 0.05;
     }
 
-    if (User.Stat.DODGE > 70){
-        User.Stat.DODGE = 70;
+    if (User.Stat.DODGE > 100){
+        User.Stat.DODGE = 100;
         User.Stat.DEF += 1;
     }
 
@@ -107,6 +109,29 @@ string ArrowAnim(int Lenght){
 
 //- Base Battle Actions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 
+void GoldStealing(Entity& User, Entity& Target){
+    int GoldSteal = 0;
+
+    if (User.Misc.Class == Thief){ // Gold Stealing
+        usleep(700000);
+        if (Target.Stat.Gold > 0){
+            GoldSteal = (rand() % 5 + 1) * User.Multiplier.GoldMult;
+            if (PlayerTurn == true){
+                cout << "\tYou stole " << GoldSteal << "\033[93mg\033[0m from " << Target.Name << "!\n\n";
+
+            }else {
+                cout << "\tIt stole \033[93m" << GoldSteal << "g\033[0m from You\n\n";
+            }
+        }else{
+            cout << Target.Name << " had no \033[93mGold\033[0m to Steal" << "\n\n";
+        }
+        User.Stat.Gold += GoldSteal;
+        Target.Stat.Gold -= GoldSteal;
+        StatOverflowCheck(Target);
+        usleep(500000);
+    }
+}
+
 void Defend(Entity& User){
 
     if (PlayerTurn == true){
@@ -129,7 +154,7 @@ void BasicAttack(Entity& User, Entity& Target){
 
     if (User.Status.Burn > 0) {//Burn cut damage
         Damage = Damage / 2;
-        cout << "[Damage decreased due to Burn]" << "\n\n";
+        cout << "[Damage decreased due to \033[91mBurn\033[0m]" << "\n\n";
         usleep(500000);
     }
 
@@ -142,6 +167,10 @@ void BasicAttack(Entity& User, Entity& Target){
     if (User.Stat.CRIT >= Chance) {//Critical hit
 
         Damage = Damage * User.Stat.CRITMULT; 
+        if (PlayerTurn == true){
+        SlashAnim("\033[1;91m",50000, false, false);
+        cout << "\n\n\n\n\n";
+        }
 
         CriticalHitUI();
         sleep (1);
@@ -158,13 +187,19 @@ void BasicAttack(Entity& User, Entity& Target){
             cout << "\tYou dodged its attack!\n\n";
         } 
 
-        usleep(500000);
+        sleep(1);
+        return;
+    }
 
-    }else if (PlayerTurn == true){
+    if (PlayerTurn == true){
         cout << "\tYou dealt " << Damage << " damage!\n\n";
+
     }else {
         cout << "\tIt deals " << Damage << " damage\n\n";
     }
+
+
+    GoldStealing(User,Target);
 
         usleep(500000);
 }
@@ -177,7 +212,7 @@ void BasicAttack(Entity& User, Entity& Target){
 Item ItmHealingPotion(HealPotion,   "\033[92mHealing\033[0m Potion", "(Heals 70 HP)", 6, 9);                    //1
 Item ItmManaFlask(MpFlask,          "\033[94mMana\033[0m Flask", "(Restores 40 Mana)", 5, 9);
 Item ItmStatusPotion(StusPotion,    "\033[96mStatus\033[0m Potion", "(Heals all Status Effects)", 3, 9);
-Item ItmMixedFlask(VFlask,         "\033[95mMixed\033[0m Flask", "(Restores 60% HP & Mana)", 7, 9);
+Item ItmMixedFlask(VFlask,          "\033[95mMixed\033[0m Flask", "(Restores 60% HP & Mana)", 7, 9);
 Item ItmUltimateFlask(UltFlask,     "\033[1;92mUlt\033[96mim\033[94mate\033[0m Flask", "(Fully Heals HP, Mana & Status)", 15, 21);    //5
 Item ItmBloodCoating(BloodCoat,     "\033[31mBlood\033[0m Coating", "(Guaranteed CRIT)", 5, 9);
 Item ItmVitalityCoating(VitalCoat,  "\033[92mStamina\033[0m Coating", "(Attack that heals HP & Mana)", 5, 9);
@@ -188,8 +223,8 @@ Item ItmBurningCinders(BurnCinder,  "\033[91mBurning \033[90mCinders\033[0m", "(
 Item ItmFlintnSteel(FlintnSteel,    "\033[90mFlint\033[0m & \033[91mSteel\033[0m", "(Burns target for 6 turns)", 7, 18);
 Item ItmPoisonDart(PsnDart,         "\033[92mPoison Dart\033[0m", "(Poisons target for 3 turns)", 3, 9);
 Item ItmPoisonDagger(PsnDagger,     "\033[92mPoison Dagger\033[0m", "(Poisons target for 6 turns)", 7, 9);
-Item ItmIceFlask(IceFlsk,           "\033[96mIce\033[0m Flask", "(Freezes target for 2 Turns)", 4, 9);                    //15
-Item ItmChillingOrb(ChillOrb,       "\033[96mChilling\033[0m Orb", "(Freezes target for 4 turns)", 8, 9);
+Item ItmIceFlask(IceFlsk,           "\033[96mIce\033[0m Flask", "(Freezes target for 2 Turns)", 5, 9);                    //15
+Item ItmChillingOrb(ChillOrb,       "\033[96mChilling\033[0m Orb", "(Freezes target for 3 turns)", 8, 9);
 Item ItmDeadlyJar(DeadJar,          "\033[95mDeadly\033[0m Jar", "(Dooms target w/ all Status)", 12, 9);
 Item ItmLightninginaJar(LightinJar, "\033[93mLightning in a Jar\033[0m", "(Shocks target for 99 turns)", 10, 9);
 Item ItmExplosiveJar(ExplosJar,     "\033[91mExplosive\033[0m Jar", "(Deals 50 Damage)", 4, 9);
@@ -200,7 +235,6 @@ Item ItmCoinPouch(CoinBag,          "\033[93mCoin Pouch\033[0m", "(May have good
 Item ItmVoodooDoll(VoodooDo,        "\033[33mVoodoo Doll\033[0m", "(Damages 1.5 x MAXHP [Sacrifices 10% HP])", 12, 9);
 Item ItmPreciseNeedle(PrecNeedle,   "Precise Needle", "(Super low chance to INSTAKILL)", 1, 0);      //25
 Item ItmArmageddon(Armagedon,       "Armageddon", "", 100, 0);
-Item ItmVioletTonic(Tonic,          "\033[1;95mViolet Tonic\033[0m", "(Become \033[1;95mOmnipotent\033[0m)",0,21);
 
 //- Item Effects - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 
@@ -405,7 +439,7 @@ void ItmEffIceFlask(Entity& User, Entity& Target){// 15
 void ItmEffChillingOrb(Entity& User, Entity& Target){// 16
     cout << User.Name << " picks out a Chilling Orb" << "\n\n";
     sleep(1);
-    Target.Status.Freeze += 4;
+    Target.Status.Freeze += 3;
 	cout << User.Name << " throws the orb at " << Target.Name << "\n\n";
     sleep(2);
     cout << "And it waves around it, ";
@@ -835,6 +869,7 @@ void ItmEffArmageddon(Entity& User, Entity& Target){// 26
 }
 void ItmEffVioletTonic(Entity& User){
     cout << User.Name << " drinks the rare \033[1;95mViolet Tonic\033[0m" << endl;
+    User.Misc.Color = "\033[1;95m";
     sleep(1);
 
     for (int c = 0; c < 5; c++){
@@ -939,31 +974,31 @@ void ItmEffVioletTonic(Entity& User){
 Spell SplSupremeHeal(SupremHeal, "\033[1;95mSupreme \033[92mHeal\033[0m", "(Heals a \033[1;92mSUPERB\033[0m amount of HP [About ~50%])", 6, 3, 27);
 Spell SplGreatHeal(GrtHeal, "\033[1;94mGreat \033[92mHeal\033[0m", "(Heals a good amount of HP [Above 30%])", 4, 2, 16);    // 9
 Spell SplBloodBinding(BloodBind, "\033[1;31mBlood \033[91mBinding\033[0m", "(Absorbs Target's HP [up to 30%])", 7, 2, 16);     // 10
-Spell SplWilloWisp(WillWisp, "\033[1;91mWill\033[90m-o-\033[91mWisp\033[0m", "(Burns Target [3-5 turns])", 5, 1, 21); 
-Spell SplIgnitus(Ignits, "\033[1;91mIgnitus\033[0m", "(Massive Fireball [60% Chance to Burn])", 8, 3, 11);
-Spell SplPoisonCloud(PsnCloud, "\033[1;92mPoison \033[90mCloud\033[0m", "(Poisons Target [3-5 turns])", 7, 1, 16);
-Spell SplInfestation(Infestat, "\033[1;92mInfestation\033[0m", "(Flurry of Poisoning Attacks[2-6])", 9, 3, 11);
-Spell SplViciousMockery(VMock, "\033[1;96mVicious \033[95mMockery\033[0m", "(Chance to Freeze [2-3 turns])", 4, 1, 16); // 15
-Spell SplFrigidLaceration(FrigLaceration, "\033[1;96mFrigid Laceration\033[0m", "(Stronger Attack that may Freeze)", 5, 2, 11);
-Spell SplThunderChain(ThundChain, "\033[1;93mThunder Chain\033[0m", "(4-10 Lightning Shots [25% to Shock])", 6, 2, 11);
-Spell SplPolarityShock(PolarShock, "\033[1;94mPolarity \033[93mShock\033[0m", "(Wild ThunderBolt [80% to Shock])", 8, 2, 16);
+Spell SplWilloWisp(WillWisp, "\033[1;91mWill\033[90m-o-\033[91mWisp\033[0m", "(Burns Target [3-5 turns])", 4, 1, 21); 
+Spell SplIgnitus(Ignits, "\033[1;91mIgnitus\033[0m", "(Massive Fireball [MAGIC x 3] [60% Chance to Burn])", 8, 3, 11);
+Spell SplPoisonCloud(PsnCloud, "\033[1;92mPoison \033[90mCloud\033[0m", "(Poisons Target [3-5 turns])", 6, 1, 16);
+Spell SplInfestation(Infestat, "\033[1;92mInfestation\033[0m", "(Flurry of Poisoning Attacks[2-6] [ATK / 3])", 9, 3, 11);
+Spell SplViciousMockery(VMock, "\033[1;96mVicious \033[95mMockery\033[0m", "(Chance to Freeze [2-3 turns])", 5, 1, 16); // 15
+Spell SplFrigidLaceration(FrigLaceration, "\033[1;96mFrigid Laceration\033[0m", "(Stronger Attack that may Freeze [ATK + (MAGIC / 2)])", 5, 2, 11);
+Spell SplThunderChain(ThundChain, "\033[1;93mThunder Chain\033[0m", "(4-10 Lightning Shots [MAGIC / 4] [25% to Shock])", 6, 2, 11);
+Spell SplPolarityShock(PolarShock, "\033[1;94mPolarity \033[93mShock\033[0m", "(Wild ThunderBolt [MAGIC x 3] [80% to Shock])", 8, 2, 16);
 Spell SplStatisticalLightbeam(StatBeam, "\033[1;93mStatistical LightBeam\033[0m", "(Deals 30% of your Total Stat Number)", 6, 1, 11);
-Spell SplMetaphysicalOverload(MetaOverload, "\033[1;95mMetaphysical Overload\033[0m", "(Low chance of INSTAKILL)", 4, 1, 11); // 20
+Spell SplMetaphysicalOverload(MetaOverload, "\033[1;95mMetaphysical Overload\033[0m", "(Low chance of INSTAKILL [5% + (MAGIC / 10 x 3)%])", 4, 1, 11); // 20
 Spell SplChromaticWave(ChromWave, "\033[1;95mCh\033[94mro\033[96mma\033[92mti\033[93mc \033[91mWa\033[95mve\033[0m", "(Uses a \033[1;95mR\033[91ma\033[93mn\033[92md\033[96mo\033[94mm \033[0mSpell's Effect)", 5, 2, 77);
 //Class Exclusive Spells
 Spell SplDuoSlash(DuoSlsh, "\033[1;33mDuo \033[37mSlash\033[0m", "(Double Slash that Attacks twice)", 4, 1, 16);                 // 2
 Spell SplCrossSlash(CrossSlsh, "\033[1;33mCross \033[37mSlash\033[0m", "(Cool Slash that Attacks 3 Times)", 6, 2, 16);
-Spell SplMagicaBlast(MBlast, "\033[1;94mMagica \033[37mBlast\033[0m", "(MAGIC Based Normal Attack [x1.2])", 2, 1, 16);           // 4
-Spell SplArcaneBlast(ArcBlast, "\033[1;94mArcane \033[37mBlast\033[0m", "(Stronger MAGIC Based Attack [x1.8])", 3, 2, 16);
+Spell SplMagicaBlast(MBlast, "\033[1;94mMagica \033[37mBlast\033[0m", "(MAGIC Based Normal Attack [MAGIC x 1.2])", 2, 1, 16);           // 4
+Spell SplArcaneBlast(ArcBlast, "\033[1;94mArcane \033[37mBlast\033[0m", "(Stronger MAGIC Based Attack [MAGIC x 2])", 4, 2, 16);
 Spell SplTemperedCut(TempnRageCut, "\033[1;91mTempered \033[37mCut\033[0m", "(Guaranteed Critical Hit)", 8, 1, 16);              // 6
 Spell SplEnragedCut(TempnRageCut, "\033[1;91mEnraged \033[37mCut\033[0m", "(Cheaper Guaranteed Critical Hit)", 5, 2, 16);        // 6 Both Have Same Effect
 Spell SplKnightStance(KnghtStance, "\033[1;37mKnight's Stance\033[0m", "(Attack + Defend at the same time)", 3, 1, 11);
-Spell SplRoyalKnightStance(RoylkKnghtStance, "\033[1;91mR\033[37mo\033[93my\033[37ma\033[93ml \033[37mKnight's Stance\033[0m", "(Attack[w/ Status] + Defend)", 5, 2, 36);// 8
+Spell SplRoyalKnightStance(RoylkKnghtStance, "\033[1;91mRoyal \033[37mKnight's Stance\033[0m", "(Attack[w/ Status] + Defend)", 5, 2, 16);// 8
 //Class Ultimates
-Spell SplOmnislash(Omnislsh, "\033[1;33mOmnislash\033[0m", "(Broken Slash that Attacks 5-6 Times)", 8, 4, 11);
-Spell SplWarlockBlast(WarBlast, "\033[1;95mWarlock \033[94mBlast\033[0m", "(Massive MAGIC Based Attack [x3.0])", 5, 4, 16);
+Spell SplOmnislash(Omnislsh, "\033[1;33mOmnislash\033[0m", "(Broken Slash that Attacks 5-6 Times)", 9, 4, 11);
+Spell SplWarlockBlast(WarBlast, "\033[1;95mWarlock \033[94mBlast\033[0m", "(Massive MAGIC Based Attack [MAGIC x 4])", 6, 4, 16);
 Spell SplVengeanceCut(VengCut, "\033[1;31mVengeful Cut\033[0m", "(Guaranteed HP Absorving CRIT)", 6, 4, 11);
-Spell SplBlackKnightStance(BlckKnghtStance, "\033[1;90mBlack Knight's Stance\033[0m", "(Attack + Defend[Status x2])", 6, 4, 11);
+Spell SplBlackKnightStance(BlckKnghtStance, "\033[1;90mBlack Knight's Stance\033[0m", "(Attack[w/ Status] + Defend[w/ Status])", 6, 4, 11);
 
 //- Spell Effects - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 
@@ -1362,10 +1397,10 @@ void SplEffInfestation(Entity& User, Entity& Target){// 14
 
     Damage = 0;
 
-	for (int t = rand() % 4 + 3; t > 0; t--){
+	for (int t = rand() % 5 + 2; t > 0; t--){
 
 	    Target.Stat.HP -= Damage;
-	    Damage = ((User.Stat.ATK * User.Multiplier.ATKMult) / 2) - (Target.Stat.DEF / 2);
+	    Damage = ((User.Stat.ATK * User.Multiplier.ATKMult) / 3) - (Target.Stat.DEF / 2);
 
         if (Damage <= 0){
             Damage = 2;
@@ -1486,10 +1521,8 @@ void SplEffViciousMockery(Entity& User, Entity& Target){// 15
 void SplEffFrigidLaceration(Entity& User, Entity& Target){// 16
     cout << User.Name << " casted Frigid Laceration" << "\n\n";
     sleep(1);
-    cout << User.Name << "'s Sword gets \033[96mFrozen\033[0m, ";
-    sleep(1);
-    cout << "and it slashes " << Target.Name << "\n\n";
-    sleep(1);
+    
+    SlashAnim("\033[1;96m", 60000, true, false);
 
 	Damage = ((User.Stat.ATK * User.Multiplier.ATKMult) + ((User.Stat.MA * User.Multiplier.MAGICMult) / 2)) - Target.Stat.DEF;
     if (Damage <= 0){
@@ -1512,7 +1545,7 @@ void SplEffFrigidLaceration(Entity& User, Entity& Target){// 16
         cout << "\tIt dealt " << Damage << " damage!" << "\n\n";
         sleep(1);
 
-	    Chance = rand() % 20 + 1;
+	    Chance = rand() % 25 + 1;
 	    if ((User.Stat.MA * User.Multiplier.MAGICMult) >= Chance){
             Chance = rand() % 100 + 1;
             if (Target.Stat.DODGE <= Chance) {
@@ -2028,6 +2061,10 @@ void RelicEffects(Entity& Player, Relic *useRelic){
 
         case CatStatu:
         Player.Multiplier.PriceMult -= 0.25; // Cat Statue Check
+        break;
+
+        case UnderSkull:
+        Player.Misc.Revive++;
         break;
 
         case InsightLen:

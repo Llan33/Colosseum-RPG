@@ -5,37 +5,60 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string>
+#include <vector>
+#include <algorithm>
 #include <Windows.h>
 #include "mmsystem.h"
 
 #pragma comment(lib, "Winmm.lib" );
 #include "kingslayer_battlesystem.h"
 
+#define VERSION   = "v1.0"
+#define CREATOR   = "Francisco Sousa"
+
 using namespace std;
+//g++ kingslayer.cpp -o kingslayer.exe -lwinmm
 
-void BetaGameLoop(){
-    PlayerNaming(Player1);
-    ClassChoice(Player1);
+void GameLoopSetup(Entity& Player){
+
+
+
+
+
+    BossEffectsReset();
+    CurrentBossEffect = MiniBossEffects[size(MiniBossEffects)-1];
+    MiniBossEffects.pop_back();
+}
+
+void MainGameLoop(Entity& Player){
+    GameLoopSetup(Player);CurrentBossEffect = GoldThief;
+
+    // PlayerNaming(Player);
+    // ClassChoice(Player);
     while(true){
+        bool TrueRoute = false;
 
-        if (Wave == 6){//CHAMPION WAVE
+        if (Wave == 6 && Floor == 0){//CHAMPION WAVE
             while(WaveRound < 5){
                 EnemyScaling(EnemyA);
                 ColosseumRound(WaveRound, Wave, Floor);
-                Battle(Player1, EnemyA);
+                DE_RandomFallenTalk(Player);
+                Battle(Player, EnemyA);
                 if (GameOver == true){
                     return;
                 }
                 WaveRound++;
-                ShuffleTime(Player1);
+                ShuffleTime(Player);
             }
             ColosseumRound(WaveRound, Wave, Floor);
-            BattleChampion(Player1);
+            BattleChampion(Player);
             if (GameOver == true){
                 return;
             }
             Wave++;
             WaveRound = 1;
+            DE_VioletTonicAwarding(Player);
+            BattleEndingWitch(Player);
             return;
         }
 
@@ -43,19 +66,25 @@ void BetaGameLoop(){
             while(WaveRound < 5){
                 EnemyScaling(EnemyA);
                 ColosseumRound(WaveRound, Wave, Floor);
-                Battle(Player1, EnemyA);
+                Battle(Player, EnemyA);
                 if (GameOver == true){
                     return;
                 }
                 WaveRound++;
-                ShuffleTime(Player1);
+                ShuffleTime(Player);
             }
             ColosseumRound(WaveRound, Wave, Floor);
-            BattleKings(Player1);
-            if (GameOver == true){
-                return;
+
+            KingsAppearAnim();
+            KingChoice(Player,TrueRoute);
+            if (TrueRoute == true){
+                    BattleKings(Player);
+                if (GameOver == true){
+                    return;
+                }
+            }else{
+                ENDING_KingEnding(Player);
             }
-            Wave++;
             WaveRound = 1;
             return;
         }
@@ -63,23 +92,25 @@ void BetaGameLoop(){
         while(WaveRound < 5){
             EnemyScaling(EnemyA);
             ColosseumRound(WaveRound, Wave, Floor);
-            Battle(Player1, EnemyA);
+            Battle(Player, EnemyA);
             if (GameOver == true){
                 return;
             }
             WaveRound++;
-            ShuffleTime(Player1);
+            ShuffleTime(Player);
         }
         ColosseumRound(WaveRound, Wave, Floor);
         EnemyScaling(BossA);
-        Battle(Player1, BossA);
+        Battle(Player, BossA);
         if (GameOver == true){
             return;
         }
-        Wave++;
+        if (Floor == 0){
+            Wave++;
+        }
         WaveRound = 1;
-        RelicDrop(Player1);
-        CellTime(Player1);
+        RelicDrop(Player);
+        CellTime(Player);
     }
 }
 
@@ -153,8 +184,13 @@ PlayerSwitchUI();
 // SPACES: VERTICAL = 28; HORIZONTAL = 118
 int main(){
     clear();
+    // EpilepsyWarning(false);
 
     srand (time(0));
+
+    // KingChoice(Player1, Introskip);
+
+    // SlashAnim("\033[1;96m", 60000, true);
 
     //ColosseumRound(3,6,0);
 
@@ -162,25 +198,36 @@ int main(){
     //PlaySound(0, 0, 0) ;
     //g++ kingslayer.cpp -o kingslayer.exe -lwinmm
 
-    Player1.Misc.Class = God;
-    Player1.Name = "Player"; //Limit is 15
+    Player1.Misc.Class = Gladiator;
+    Player1.Name = "Starwalker"; //Limit is 15
     Player1.Misc.NameLenght = size (Player1.Name);
+
+
 
     Player2.Name = "Francisco"; //Limit is 15
     Player2.Misc.NameLenght = size (Player2.Name);
 
-    // Dialogue(Player1,Hero,Witch,true,"very well","","",0);
+    //DE_VioletTonicAwarding(Player1);
+    //DE_WitchEndingBattleBegin(Player1);
+
+    //BattleEndingWitch(Player1);
+
+    //ENDING_ChampionEnding(Player1);
+
+    //KingChoice(Player1,Introskip);
+
+    // Dialogue(Player1,Hero,Dawg,false,"Arf?","","",0);
+    // SlashAnim("\033[1;93m", 60000, true, true);
+    // usleep(80000);
+    // Dialogue(Player1,Hero,Dawg_dead,false," ","","",0);
+    // Dialogue(Player1,Hero,Dawg_dead,true,"No...","","",0);
+    // Dialogue(Player1,Hero,Dawg_dead,false," ","","",0);
     // DialogueDramatic(Player1,Hero,Witch_fierce,false,"Then may you fall damned Warrior","\033[1;96m","","",160000,0);
 
-    //  DE_KingsBattleBegin(Player1);
+    //DE_KingsBattleBegin(Player1);
 
     // DE_KingsBattleAddisonDeath(Player1);
     // DE_KingsBattleAidenDeath(Player1);
-
-    // EnemyA.Name = "Manex";
-    // EnemyA.Misc.NameLenght = size (EnemyA.Name);
-    // BossA.Name = "Boss";
-    // EnemyA.Misc.NameLenght = size (EnemyA.Name);
 
     //DE_ChampionNoraDeath(Player1);
     //DE_ChampionBattleBegin(Player1);
@@ -213,9 +260,11 @@ int main(){
     //ArmageddonAnim("\033[43;30m", 1);
     //CellPrisontalk(Player1);
     //PrisonEvent8(Player1);
-    //Wave = 7; Floor = 0; WaveRound = 1;
-    //CellTime(Player1);
+    // CurrentBossEffect = RegenHP;
+      Wave = 6; Floor = 3; WaveRound = 5;
+    //  CellTime(Player1);
 
+      MainGameLoop(Player1);
         
         EnemyA.ItemBag.Item1 = ItemGetRandomEnemy();
 
@@ -223,20 +272,21 @@ int main(){
     //CellTime(Player1);
     //  DE_ChampionBattleDefeated(Player1);
     //  DE_ChampionNoraDeath(Player1);
-    //BattleChampion(Player1);
+    //  BattleChampion(Player1);
 
     // RelicDrop(Player1);
 
     //BattlePVP(Player1, Player2);
-    //BetaGameLoop();
+    // MainGameLoop(Player1);
 
     // Player1.Stat.HP = 10;
 
-    BattleKings(Player1);
+    //BattleKings(Player1);
     
+    TitleScreenAnim();
 
     while (true){
-        MainMenuUI();
+        TitleScreenUI();
         //BetaGameLoop();
         // PlaySound(TEXT("BATTLE1.wav"), 0, SND_FILENAME | SND_ASYNC | SND_LOOP);
         // sleep(1);
@@ -256,23 +306,25 @@ int main(){
 
             case 1:
             clear();
-            BetaGameLoop();
+            MainGameLoop(Player1);
             continue;
-            break;
 
             case 2:
             clear();
             BetaPVPLoop();
-            break;
+            continue;
 
             case 4:
             Options();
             continue;
-            break;
+
+            case 5:
+            Credits();
+            continue;
 
             default:
             cout << "Invalid";
-            sleep(1);
+            usleep(200000);
             continue;
             break;
         }

@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string>
+#include <vector>
+#include <algorithm>
 #include <Windows.h>
 #include "mmsystem.h"
 
@@ -203,6 +205,7 @@ class Upgrade{
     Relic NoRelic(NORELIC, "", "", "","","","","");
     
     Spell SplHealSmall(SHeal, "\033[1;96mSmall \033[92mHeal\033[0m", "(Heals a small amount of HP [About 15%])", 2, 0, 16);// 1
+    Item ItmVioletTonic(Tonic,          "\033[1;95mViolet Tonic\033[0m", "(Become \033[1;95mOmnipotent\033[0m)",0,21);
 
 //- The Entity Class - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 
@@ -212,6 +215,7 @@ enum Classes{// Player Game Classes
     Wanderer,
     Berserker,
     BlackKnight,
+    Thief,
     God
 };
 enum EntityType{
@@ -220,6 +224,7 @@ enum EntityType{
     ENEMY,
     FALLEN,
     BOSS,
+    WITCH,
     CHAMPION,
     KING
 };
@@ -232,12 +237,14 @@ class Entity {
         Classes Class = NOCLASS;
         string Color = "";
         uint16_t Level = 1;
-        int Spellslots = 2;
+        int Spellslots = 1;
         int Tokens = 3;
         uint16_t Itemslots = 3;
         uint32_t XPThreshold = 100;
         int NameLenght;
         EntityType Type;
+        int Revive = 0;
+        bool AllStatusImmunity = false;
     }Misc;
         
     struct Stats {
@@ -251,6 +258,7 @@ class Entity {
         float DODGE;
         int Gold;
         int XP = 0;
+        int HPRegen = 0;
         int Kindness = 0;
     }Stat;
 
@@ -310,6 +318,10 @@ class Entity {
     Entity() = default;
 };
 
+
+
+
+
 //-----------DIALOG--------------------------------------------------------------------------------------------------------------------------------------------------------------||
 
 enum Portrait {
@@ -317,9 +329,12 @@ enum Portrait {
     Hero,
     Hero_halfChamp,
     Hero_Champ,
+    Dawg,
+    Dawg_dead,
     Witch,
     Witch_down,
     Witch_fierce,
+    Witch_broken,
     Sogro_prison,
     Prisoner,
     Prisoner_Free,
@@ -566,7 +581,7 @@ void CharacterPortraits(DialogueC& Cside, Portrait character, Entity& Player){
         Cside.PortraitLine[4] = "\033[1;96m   : .'.   : \033[95m  /       \\\033[1;96m.'  .'   '. :   \033[0m";
         Cside.PortraitLine[5] = "\033[1;96m    '  ' .'  \033[95m /         \\..'.. \033[1;96m .' .'   \033[0m";
         Cside.PortraitLine[6] = "\033[1;96m    .'' :\033[95m .../           \\    '''''--.  \033[0m";
-        Cside.PortraitLine[7] = "\033[95m .----''''  /  \033[93m [] \033[95m            ..-'''   \033[0m";
+        Cside.PortraitLine[7] = "\033[95m .----''''  /  \033[96m [] \033[95m            ..-'''   \033[0m";
         Cside.PortraitLine[8] = "\033[1;96m  :\033[95m''--..       \033[1;96m   |    \033[95m ..- ''   \033[1;96m   .  \033[0m";
         Cside.PortraitLine[9] = "\033[1;96m :   .'  \033[95m'--..____\033[1;96m.'.\033[95m--''\033[0m  |\033[1;96m .'''-.     \033[0m";
        Cside.PortraitLine[10] = "\033[1;96m '.   '..\033[0m | :  \033[1;96m--- \033[1;95m*\033[1;96m --- \033[0m  |\033[1;96m: :  '  :   \033[0m";
@@ -575,6 +590,27 @@ void CharacterPortraits(DialogueC& Cside, Portrait character, Entity& Player){
        Cside.PortraitLine[13] = " \033[1;96m '.   \033[0m   |\033[1;95m.''-.\033[1;96m\\_/\033[95m.-''\033[0m|-'  \033[95m : \033[1;96m    .'   \033[0m";
        Cside.PortraitLine[14] = " \033[1;96m   :  \033[95m   :     .--.         :  \033[1;96m  '.    \033[0m";
        Cside.PortraitLine[15] = " \033[1;96m .'  \033[95m   '     .'   '.       '  \033[1;96m    '.. \033[0m";
+        break;
+
+        case Witch_broken:
+        Cside.Ncolor = "\033[95m";
+        Cside.Name = "Witch";
+        Cside.PortraitLine[0] = "\033[95m                   /.                   ";
+        Cside.PortraitLine[1] = "\033[95m                  / \\                   ";
+        Cside.PortraitLine[2] = "\033[95m                 /   \\                  ";
+        Cside.PortraitLine[3] = "\033[95m                 _\\   \\                 ";
+        Cside.PortraitLine[4] = "\033[95m               _/     /                 ";
+        Cside.PortraitLine[5] = "\033[95m              /       ''.   ..          ";
+        Cside.PortraitLine[6] = "\033[95m            ./           \\-'  ''''---.  ";
+        Cside.PortraitLine[7] = "\033[95m .--.-'''-''/   \033[1;90m[] \033[95m        .--'-.-'''   ";
+        Cside.PortraitLine[8] = "\033[95m  '''-''...              ..-'           ";
+        Cside.PortraitLine[9] = "\033[1;90m          /\033[95m'-..-'--..--'' \033[1;90m |            ";
+       Cside.PortraitLine[10] = "\033[1;90m          |\033[0m :  ___   .\033[1;90m\\    |            ";
+       Cside.PortraitLine[11] = "\033[1;90m          |\033[0m :'' \033[90m _\033[1;0m''' .\033[1;90m|   |            ";
+       Cside.PortraitLine[12] = "\033[1;90m          |\033[0m  '..\033[90m/ \\\033[0m.-' \033[1;90m|  \033[95m.'.           ";
+       Cside.PortraitLine[13] = "\033[1;90m          |\033[0;95m.''-.\033[90m\\_/\033[1;95m.-''\033[1;90m|\033[95m-'  '.          ";
+       Cside.PortraitLine[14] = "\033[95m           :    .--.         '.         ";
+       Cside.PortraitLine[15] = "\033[95m          '    .'   '.        '         ";
         break;
 
         case Aiden:
@@ -655,10 +691,10 @@ void CharacterPortraits(DialogueC& Cside, Portrait character, Entity& Player){
         Cside.PortraitLine[9] = "           '|         : :               ";
        Cside.PortraitLine[10] = "             |      .' .'               ";
        Cside.PortraitLine[11] = "             '-----' |'                 ";
-       Cside.PortraitLine[12] = "\033[91m              .\033[0m|\033[1;4;93m-----\033[0m|\033[91m''-.              \033[0m";
-       Cside.PortraitLine[13] = "\033[91m           .'' \033[91m\\     \033[91m/    ''-.          \033[0m";
-       Cside.PortraitLine[14] = "\033[91m         .'\033[1;93m-.-.-\033[91m|    \033[91m|\033[1;93m-.-.-.-.\033[91m'.        \033[0m";
-       Cside.PortraitLine[15] = "\033[91m       .'\033[1;93m.-.-.-.\033[91m|    \033[91m|\033[1;93m.-.-.-.-.-\033[91m'.      \033[0m";
+       Cside.PortraitLine[12] = "\033[94m              .\033[0m|\033[1;4;93m-----\033[0m|\033[94m''-.              \033[0m";
+       Cside.PortraitLine[13] = "\033[94m           .'' \033[94m\\     \033[94m/    ''-.          \033[0m";
+       Cside.PortraitLine[14] = "\033[94m         .'\033[1;93m-.-.-\033[94m|    \033[94m|\033[1;93m-.-.-.-.\033[94m'.        \033[0m";
+       Cside.PortraitLine[15] = "\033[94m       .'\033[1;93m.-.-.-.\033[94m|    \033[94m|\033[1;93m.-.-.-.-.-\033[94m'.      \033[0m";
         break;
 
         case Addison_power:
@@ -676,10 +712,10 @@ void CharacterPortraits(DialogueC& Cside, Portrait character, Entity& Player){
         Cside.PortraitLine[9] = "\033[1;95m           '\033[0m|         \033[1;95m: :               ";
        Cside.PortraitLine[10] = "             |      .' \033[1;95m.'               ";
        Cside.PortraitLine[11] = "             '-----' |\033[1;95m'                 ";
-       Cside.PortraitLine[12] = "\033[91m              .\033[0m|\033[1;4;93m-----\033[0m|\033[91m''-.              \033[0m";
-       Cside.PortraitLine[13] = "\033[91m           .'' \033[91m\\     \033[91m/    ''-.          \033[0m";
-       Cside.PortraitLine[14] = "\033[91m         .'\033[1;93m-.-.-\033[91m|    \033[91m|\033[1;93m-.-.-.-.\033[91m'.        \033[0m";
-       Cside.PortraitLine[15] = "\033[91m       .'\033[1;93m.-.-.-.\033[91m|    \033[91m|\033[1;93m.-.-.-.-.-\033[91m'.      \033[0m";
+       Cside.PortraitLine[12] = "\033[94m              .\033[0m|\033[1;4;93m-----\033[0m|\033[94m''-.              \033[0m";
+       Cside.PortraitLine[13] = "\033[94m           .'' \033[94m\\     \033[94m/    ''-.          \033[0m";
+       Cside.PortraitLine[14] = "\033[94m         .'\033[1;93m-.-.-\033[94m|    \033[94m|\033[1;93m-.-.-.-.\033[94m'.        \033[0m";
+       Cside.PortraitLine[15] = "\033[94m       .'\033[1;93m.-.-.-.\033[94m|    \033[94m|\033[1;93m.-.-.-.-.-\033[94m'.      \033[0m";
         break;
 
         case Addison_dead:
@@ -697,10 +733,10 @@ void CharacterPortraits(DialogueC& Cside, Portrait character, Entity& Player){
         Cside.PortraitLine[9] = "           '|         : :               ";
        Cside.PortraitLine[10] = "             |      .' .'               ";
        Cside.PortraitLine[11] = "             '-----' |'                 ";
-       Cside.PortraitLine[12] = "\033[91m              .\033[0m|\033[1;4;93m-----\033[0m|\033[91m''-.              \033[0m";
-       Cside.PortraitLine[13] = "\033[91m           .'' \033[91m\\     \033[91m/    ''-.          \033[0m";
-       Cside.PortraitLine[14] = "\033[91m         .'\033[1;93m-.-.-\033[91m|    \033[91m|\033[1;93m-.-.-.-.\033[91m'.        \033[0m";
-       Cside.PortraitLine[15] = "\033[91m       .'\033[1;93m.-.-.-.\033[91m|    \033[91m|\033[1;93m.-.-.-.-.-\033[91m'.      \033[0m";
+       Cside.PortraitLine[12] = "\033[94m              .\033[0m|\033[1;4;93m-----\033[0m|\033[94m''-.              \033[0m";
+       Cside.PortraitLine[13] = "\033[94m           .'' \033[94m\\     \033[94m/    ''-.          \033[0m";
+       Cside.PortraitLine[14] = "\033[94m         .'\033[1;93m-.-.-\033[94m|    \033[94m|\033[1;93m-.-.-.-.\033[94m'.        \033[0m";
+       Cside.PortraitLine[15] = "\033[94m       .'\033[1;93m.-.-.-.\033[94m|    \033[94m|\033[1;93m.-.-.-.-.-\033[94m'.      \033[0m";
         break;
 
         case Prisoner:
@@ -829,6 +865,48 @@ void CharacterPortraits(DialogueC& Cside, Portrait character, Entity& Player){
        Cside.PortraitLine[15] = "        \033[92m' \033[90m  /  /      /   /     \033[92m ' \033[90m     ";
         break;
 
+        case Dawg:
+        Cside.Ncolor = "\033[1;37m";
+        Cside.Name = "Dog";
+        Cside.PortraitLine[0] = "                                        ";
+        Cside.PortraitLine[1] = "                                        ";
+        Cside.PortraitLine[2] = "                                        ";
+        Cside.PortraitLine[3] = "                                        ";
+        Cside.PortraitLine[4] = "                                        ";
+        Cside.PortraitLine[5] =  "\033[1;90m                        _               ";
+        Cside.PortraitLine[6] = "\033[1;90m              |\\       / |              ";
+        Cside.PortraitLine[7] = "\033[1;90m              | \\_____/  |              ";
+        Cside.PortraitLine[8] = "\033[1;90m              |          |              ";
+        Cside.PortraitLine[9] = "\033[1;90m             | \033[37m.   .  \033[90m   |           .--";
+       Cside.PortraitLine[10] = "\033[1;37m        __\033[90m------         |          / .-";
+       Cside.PortraitLine[11] = "\033[1;37m       /__\\\033[90m              |         / /  ";
+       Cside.PortraitLine[12] = "\033[1;90m       \\________         |        | |   ";
+       Cside.PortraitLine[13] = "\033[1;91m          |  |\033[90m|          |        '.'   ";
+       Cside.PortraitLine[14] = "\033[1;91m          |__|\033[90m \\          \\_____________";
+       Cside.PortraitLine[15] = "\033[1;90m                |                       ";
+        break;
+
+        case Dawg_dead:
+        Cside.Ncolor = "\033[1;37m";
+        Cside.Name = "Dog";
+        Cside.PortraitLine[0] = "                                        ";
+        Cside.PortraitLine[1] = "                                        ";
+        Cside.PortraitLine[2] = "                                        ";
+        Cside.PortraitLine[3] = "                                        ";
+        Cside.PortraitLine[4] = "                                        ";
+        Cside.PortraitLine[5] = "                                        ";
+        Cside.PortraitLine[6] = "                                        ";
+        Cside.PortraitLine[7] = "                                        ";
+        Cside.PortraitLine[8] = "                                        ";
+        Cside.PortraitLine[9] = "\033[1;90m                                     .--";
+       Cside.PortraitLine[10] = "\033[1;90m                                    / .-";
+       Cside.PortraitLine[11] = "\033[1;91m                     __..\033[90m          / /  ";
+       Cside.PortraitLine[12] = "\033[1;91m                 _.-'_.-'\033[90m|        | |   ";
+       Cside.PortraitLine[13] = "\033[1;91m               .:--:':'  \033[90m|        '.'   ";
+       Cside.PortraitLine[14] = "\033[1;90m               \\\033[91m'  : '    \033[90m\\_____________";
+       Cside.PortraitLine[15] = "\033[1;90m                |\033[91m  '                    ";
+        break;
+
         case Starwalker:
         Cside.Ncolor = "\033[1;93m";
         Cside.Name = "Starwalker";
@@ -851,7 +929,7 @@ void CharacterPortraits(DialogueC& Cside, Portrait character, Entity& Player){
         break;
 
         case Hero_halfChamp:
-        Cside.Ncolor = "";
+        Cside.Ncolor = Player.Misc.Color;
         Cside.Name =  Player.Name;
         Cside.PortraitLine[0] = "                                        ";
         Cside.PortraitLine[1] = "               _______                  ";
@@ -872,24 +950,24 @@ void CharacterPortraits(DialogueC& Cside, Portrait character, Entity& Player){
         break;
 
         case Hero_Champ:
-        Cside.Ncolor = "";
+        Cside.Ncolor = Player.Misc.Color;
         Cside.Name =  Player.Name;
-        Cside.PortraitLine[0] = "               ..--'''-.                ";
-        Cside.PortraitLine[1] = "             .' .' : '. '               ";
-        Cside.PortraitLine[2] = "            :     '     //                ";
-        Cside.PortraitLine[3] = "           :     .     // .             ";
-        Cside.PortraitLine[4] = "           :    . ':  ||  :             ";
-        Cside.PortraitLine[5] = "           :     '====||==='            ";
-        Cside.PortraitLine[6] = "           '. :    '  ||  :             ";
-        Cside.PortraitLine[7] = "            : :      //  .'             ";
-        Cside.PortraitLine[8] = "            .' '.   //    ''.           ";
-        Cside.PortraitLine[9] = "         .-'     :     .     '-.        ";
-       Cside.PortraitLine[10] = "       .:   :    :    '   :    '.       ";
-       Cside.PortraitLine[11] = "      :   .'      '      :      :.      ";
-       Cside.PortraitLine[12] = "     .:   :             '.  '.   :.     ";
-       Cside.PortraitLine[13] = "     :           :       :    :   :     ";
-       Cside.PortraitLine[14] = "    :  .     :    :            :   :    ";
-       Cside.PortraitLine[15] = "                                        ";
+        Cside.PortraitLine[0] = "\033[1;90m               ..--'''-.                ";
+        Cside.PortraitLine[1] = "\033[1;90m             .' .' : '. ' \033[95m.             ";
+        Cside.PortraitLine[2] = "\033[1;90m            :     '    \033[95m //              ";
+        Cside.PortraitLine[3] = "\033[1;90m           :     .   \033[95m  // \033[90m.             ";
+        Cside.PortraitLine[4] = "\033[1;90m           :   \033[95m . \033[90m': \033[95m ||  \033[90m:             ";
+        Cside.PortraitLine[5] = "\033[1;90m           :     \033[95m'====||==='            ";
+        Cside.PortraitLine[6] = "\033[1;90m           '. :    ' \033[95m ||  \033[90m:             ";
+        Cside.PortraitLine[7] = "\033[1;90m            : :     \033[95m //  \033[90m.'             ";
+        Cside.PortraitLine[8] = "\033[1;90m            .' '.  \033[95m //   \033[90m ''.           ";
+        Cside.PortraitLine[9] = "\033[1;90m         .-'     :     .     '-.        ";
+       Cside.PortraitLine[10] = "\033[1;90m       .:   :    :    '   :    '.       ";
+       Cside.PortraitLine[11] = "\033[1;90m      :   .'      '      :      :.      ";
+       Cside.PortraitLine[12] = "\033[1;90m     .:   :             '.  '.   :.     ";
+       Cside.PortraitLine[13] = "\033[1;90m     :           :       :    :   :     ";
+       Cside.PortraitLine[14] = "\033[1;90m    :  .     :    :            :   :    ";
+       Cside.PortraitLine[15] = "\033[1;90m    :                             .'    ";
         break;
 
         default:
@@ -1495,30 +1573,104 @@ void DialogueDramatic(Entity& Player, Portrait LeftCharacter, Portrait RightChar
 
 // - -DIALOGUE EVENTS- - - (DE = Dialog Event) (EE = Easter Egg) - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -||
 
-void DE_KingsBattleBegin(Entity Player){
+void DE_KingRoomArrival(Entity Player){
     string ClassMention;
+    string ClassMentionCaps;
+    string Pronoun;
     switch (Player.Misc.Class){
         case Gladiator:
-        ClassMention = "GLADIATOR";
+        ClassMention = "Gladiator";
+        ClassMentionCaps = "GLADIATOR";
+        Pronoun = "him";
         break;
         case Wanderer:
-        ClassMention = "WANDERER";
+        ClassMention = "Wanderer";
+        ClassMentionCaps = "WANDERER";
+        Pronoun = "her";
         break;
         case Berserker:
-        ClassMention = "BERSERKER";
+        ClassMention = "Berserker";
+        ClassMentionCaps = "BERSERKER";
+        Pronoun = "him";
         break;
         case BlackKnight:
-        ClassMention = "BLACK KNIGHT";
+        ClassMention = "Black Knight";
+        ClassMentionCaps = "BLACK KNIGHT";
+        Pronoun = "her";
         break;
         default:
-        ClassMention = "SCOUNDREL";
+        ClassMention = "Warrior";
+        ClassMentionCaps = "WARRIOR";
+        Pronoun = "him";
         break;
     }
 
-    Dialogue(Player,Hero,Aiden,false,"DO YOU REALLY THINK WE'LL LET YOU LEAVE AFTER THIS THREAT AND WITH THE TONIC?!","THAT WE'LL LET YOU LEAVE UNPUNISHED?!","",0);
+    Dialogue(Player,Hero,Aiden,false,"Well Well Well, if it isn't our esteemed " + ClassMention,"Congratulations on your arrival here.","",0);
+    Dialogue(Player,Hero,Aiden,true,"Cut the bullshit Aiden","I demand the \033[95mViolet Tonic\033[0m and my Dog back","",0);
+    Dialogue(Player,Aiden,Addison,false,"Brother, I think we can give "+Pronoun+" the Dog at least...","","",0);
+    Dialogue(Player,Aiden,Addison,true,"Shush Addison, spare your idiocies","","",0);
+    Dialogue(Player,Hero,Aiden,true,"Answer me Aiden","","",0);
+    Dialogue(Player,Hero,Aiden,false,"Oh my HAVE SOME RESPECT","YOU SHALL REFER ME AS KING, UNWORTHY " + ClassMentionCaps,"",0);
+    Dialogue(Player,Hero,Aiden,true,". . .","","",0);
+    SlashAnim("\033[1;91m", 60000, false, true);
+    Dialogue(Player,Hero,Aiden,false,"AHHH","","",500000);
+    DialogueDramatic(Player,Hero,Aiden,true,"  No.","\033[1;91m","","",200000,0);
+    DialogueDramatic(Player,Hero,Aiden,true,"Choose one, the sword or my demand","\033[1;91m","","",80000,0);
+    Dialogue(Player,Hero,Aiden,false,"ADDISON! ADDISON!","DOG! KNIFEPOINT! NOW!","",0);
+    DialogueDramatic(Player,Hero,Aiden,true,"What","","","",70000,0);
+    Dialogue(Player,Aiden,Addison,false,"O-On it","","",0);
+    Dialogue(Player,Addison,Dawg,false,"Woof","","",0);
+    Dialogue(Player,Addison,Dawg,true,"Please don't kill brother...","I-I'll have to kill the Dog if you do","",0);
+    Dialogue(Player,Hero,Aiden,false,"YOU SEEK NOT ONLY YOUR DEMANDS, BUT VEANGEANCE TOO, NO?","YOU ARE MAD THAT YOUR VILLAGE BURNED DOWN BECAUSE OF US!","",0);
+    Dialogue(Player,Hero,Aiden,false,"SO YOU CHOOSE NOW!","\033[1;91mKILL ME\033[0m, GET THE \033[1;95mTONIC\033[0m, BUT ADDISON OVER THERE \033[1;91mKILLS THE DOG\033[0m","OR \033[1;93mSPARE ME\033[0m AND LEAVE WITH \033[1;93mTHE DOG ALIVE\033[0m",0);
+    DialogueDramatic(Player,Hero,Aiden,false,"MAKE YOUR CHOICE COWARD","\033[1;93m","","",100000,1000000);
+}
+
+void DE_KingsBattleBegin(Entity Player){
+    string ClassMention;
+    string Pronoun;
+    switch (Player.Misc.Class){
+        case Gladiator:
+        ClassMention = "GLADIATOR";
+        Pronoun = "sir";
+        break;
+        case Wanderer:
+        ClassMention = "WANDERER";
+        Pronoun = "ma'am";
+        break;
+        case Berserker:
+        ClassMention = "BERSERKER";
+        Pronoun = "sir";
+        break;
+        case BlackKnight:
+        ClassMention = "BLACK KNIGHT";
+        Pronoun = "ma'am";
+        break;
+        default:
+        ClassMention = "SCOUNDREL";
+        Pronoun = "sir";
+        break;
+    }
+
+    Dialogue(Player,Hero,Aiden,true,". . .","","",0);
+    Dialogue(Player,Hero,Aiden,true,"I'll spare you","","",0);
+    Dialogue(Player,Hero,Aiden,false,"What?","","",0);
+    Dialogue(Player,Hero,Addison,true,"Addison, let go of the dog","","",0);
+    Dialogue(Player,Addison,Dawg,true,"Y-yes "+Pronoun+"...","","",0);
+    Dialogue(Player,Dawg,Addison,true,"Arf","","",0);
+    Dialogue(Player,Hero,Dawg,true,"Good boy...","I'll be taking the \033[95mTonic\033[0m aswell","",0);
+    Dialogue(Player,Aiden,Hero,false,"\033[90m(You take the \033[95mViolet Tonic\033[90m from under the throne)","","",0);
+    Dialogue(Player,Aiden,Hero,true,"H-How did you know that-","","",0);
+    Dialogue(Player,Aiden,Hero,false,"A certain \033[95mWitch\033[0m told me","","",0);
+    Dialogue(Player,Aiden,Hero,true,"Damn you...","","",0);
+    Dialogue(Player,Dawg,Hero,false,"\033[90m(You take the \033[95mViolet Tonic\033[90m and your trusty Dog with you)\033[0m","\033[90m(Your job here is done)\033[0m","",0);
+    Dialogue(Player,Dawg,Hero,false,"\033[90m(You leave for-\033[0m","","",600000);
+    SlashAnim("\033[1;93m", 60000, true, true);
+    Dialogue(Player,Aiden,Hero,false,"AHGK","","",600000);
+    Dialogue(Player,Hero,Aiden,false,"DO YOU REALLY THINK WE'LL LET YOU LEAVE AFTER THIS THREAT AND WITH THE \033[95mTONIC\033[0m?!","THAT WE'LL LET YOU LEAVE UNPUNISHED?!","",0);
     Dialogue(Player,Aiden,Addison,false,"Brother...","We needn't start another fight-","",0);
     Dialogue(Player,Aiden,Addison,true,"SHUT UP ADDISON","DRINK SOME OF IT","",0);
-    Dialogue(Player,Hero,Aiden,true,"\033[90m(Aiden takes a sip from the \033[95mViolet Tonic\033[90m and hands it to Addison, who drinks aswell)\033[0m","","",0);
+    Dialogue(Player,Hero,Aiden,true,"\033[90m(Aiden snatches the \033[95mViolet Tonic\033[90m and takes a sip from it and hands it to Addison,\033[0m","\033[90m who drinks aswell)\033[0m","",0);
     Dialogue(Player,Hero,Addison,false,"Tastes bad...","Feels bad...","I don't want to do this...",0);
     Dialogue(Player,Hero,Aiden,false,"AHAHAHAHAHAAHAAHAHAHHAHAHAHAHAHHAHAHHAHAHAHAHAHHAAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHHAAAHAHAH","FEELS BAD?! THIS IS POWER!","",0);
     DialogueDramatic(Player,Hero,Aiden,false,"DIE " + ClassMention + ", DIE!!!","\033[1;93m","","",100000,1000000);
@@ -1542,6 +1694,116 @@ void DE_KingsBattleAddisonDeath(Entity Player){
     Dialogue(Player,Hero,Aiden,true,"\033[90m(Aiden drinks the rest of the \033[95mViolet Tonic\033[90m, not leaving a single drop left)\033[0m","","",0);
     DialogueDramatic(Player,Hero,Aiden_power,false,"TO HELL WITH YOU","\033[1;93m","","",120000,1000000);
     KingAidenIncomingUI();
+}
+void DE_KingsBattleAidenFinalDeath(Entity Player){
+    Dialogue(Player,Hero,Aiden_power,false,". . .","","",0);
+    Dialogue(Player,Hero,Aiden_power,false,"Oh","","",0);
+    Dialogue(Player,Hero,Aiden_power,true,"That's right...","Beat you both","",0);
+    Dialogue(Player,Hero,Aiden_power,false,"Drats, you bastard...","","",0);
+    Dialogue(Player,Hero,Aiden_power,true,"Heh","","",0);
+    DialogueDramatic(Player,Hero,Aiden_power,false,"Damn...","","","",120000,0);
+    DialogueDramatic(Player,Hero,Aiden,false,"You...","","","",120000,0);
+    DialogueDramatic(Player,Hero,Aiden_dead,false,Player.Name + "...","","","",200000,0);
+    Dialogue(Player,Hero,Aiden_dead,true,"","","",0);
+}
+void DE_KingsBattleAddisonFinalDeath(Entity Player){
+    Dialogue(Player,Hero,Addison_power,false,". . .","","",0);
+    Dialogue(Player,Hero,Addison_power,false,"I-I see","","",0);
+    Dialogue(Player,Hero,Addison_power,true,"That's right...","Beat you both","",0);
+    Dialogue(Player,Hero,Addison_power,false,"That's okay, you fought well","We deserved to die...","",0);
+    Dialogue(Player,Hero,Addison_power,true,"Your humbleness is honorable...","I respect it","",0);
+    Dialogue(Player,Hero,Addison_power,false,"Ha ha...","Thank you","",0);
+    DialogueDramatic(Player,Hero,Addison_power,false,"Live...","","","",120000,0);
+    DialogueDramatic(Player,Hero,Addison,false,"On...","","","",120000,0);
+    DialogueDramatic(Player,Hero,Addison_dead,false,Player.Name + "...","","","",200000,0);
+    Dialogue(Player,Hero,Addison_dead,true,"","","",0);
+}
+
+
+void DE_RandomFallenTalk(Entity Player){
+    int Random = rand() % 20 + 1;
+
+    switch (Random){
+        case 1:
+        Dialogue(Player,Hero,Fallen,false,"You will die before you know it...","","",0);
+        break;
+
+        case 2:
+        Dialogue(Player,Hero,Fallen,false,"Back off before it's too late...","","",0);
+        break;
+
+        case 3:
+        Dialogue(Player,Hero,Fallen,false,"It is unstopable...","","",0);
+        break;
+
+        case 4:
+        Dialogue(Player,Hero,Fallen,false,"Just let go...","","",0);
+        break;
+
+        case 5:
+        Dialogue(Player,Hero,Fallen,false,"The hunt will end soon...","","",0);
+        break;
+
+        case 6:
+        Dialogue(Player,Hero,Fallen,false,"You can't defeat it...","","",0);
+        break;
+
+        case 7:
+        Dialogue(Player,Hero,Fallen,false,"It is merciless...","","",0);
+        break;
+
+        case 8:
+        Dialogue(Player,Hero,Fallen,false,"It is unhuman...","","",0);
+        break;
+
+        case 9:
+        Dialogue(Player,Hero,Fallen,false,"That thing... scares me...","","",0);
+        break;
+
+        case 10:
+        Dialogue(Player,Hero,Fallen,false,"You should be afraid...","","",0);
+        break;
+
+        case 11:
+        Dialogue(Player,Hero,Fallen,false,"Your time here is running out...","","",0);
+        break;
+
+        case 12:
+        Dialogue(Player,Hero,Fallen,false,"It's not worth the risk...","","",0);
+        break;
+
+        case 13:
+        Dialogue(Player,Hero,Fallen,false,"It is surreal...","","",0);
+        break;
+
+        case 14:
+        Dialogue(Player,Hero,Fallen,false,"No one can beat it...","","",0);
+        break;
+
+        case 15:
+        Dialogue(Player,Hero,Fallen,false,"It has never been vanquished before...","","",0);
+        break;
+
+        case 16:
+        Dialogue(Player,Hero,Fallen,false,"Save yourself...","","",0);
+        break;
+
+        case 17:
+        Dialogue(Player,Hero,Fallen,false,"It's an unfair fight...","","",0);
+        break;
+
+        case 18:
+        Dialogue(Player,Hero,Fallen,false,"Give up...","","",0);
+        break;
+
+        case 19:
+        Dialogue(Player,Hero,Fallen,false,"It's not worth it...","","",0);
+        break;
+
+        case 20:
+        Dialogue(Player,Hero,Fallen,false,"You too, will be doomed...","","",0);
+        break;
+    }
 }
 
 void DE_ChampionBattleBegin(Entity Player){
@@ -1635,14 +1897,14 @@ void DE_ChampionNoraDeath(Entity Player){
     DialogueWhite(Player,Hero,Nora,false,"Being trapped by such power was insuferable","","",0);
     DialogueWhite(Player,Hero,Nora,false,"I was living a never ending nightmare every day inside the shell of a \"Champion\"","","",0);
     DialogueWhite(Player,Hero,Nora,false,"But now, now I'm free","Now I can rest","Now I can...",0);
-    DialogueWhite(Player,Hero,Nora,false,". . .","Now I can die in peace","",0);
-    DialogueWhite(Player,Hero,Nora,true,"You're... welcome","I suppose","",0);
-    DialogueWhite(Player,Hero,Nora,false,"Yes, yes","Thank you","",0);
+    DialogueWhite(Player,Hero,Nora,false,"Now I can die in peace","","",0);
+    DialogueWhite(Player,Hero,Nora,true,"You're, welcome","I suppose","",0);
+    DialogueWhite(Player,Hero,Nora,false,"Yes,","Thank you","",0);
     DialogueWhite(Player,Hero,Nora,false,"You killed me, so...","That makes you the second Champion, no?","",0);
     DialogueWhite(Player,Hero,Nora,true,"Correct","","",0);
     DialogueWhite(Player,Hero,Nora,false,"Hmm....","","",0);
-    DialogueWhite(Player,Hero,Nora,false,"Whatever you do, don't drink the prize Tonic","","",0);
-    DialogueWhite(Player,Hero,Nora,true,"The Violet Tonic?","","",0);
+    DialogueWhite(Player,Hero,Nora,false,"Whatever you do, don't drink the \033[35mprize Tonic\033[0m","","",0);
+    DialogueWhite(Player,Hero,Nora,true,"The \033[35mViolet Tonic\033[0m?","","",0);
     DialogueWhite(Player,Hero,Nora,false,"Yes, you saw what happened to me","Please don't commit the same mistake","",0);
     DialogueWhite(Player,Hero,Nora,true,"Alright","","",0);
     DialogueWhite(Player,Hero,Nora,false,"Very well,","I think we're done here","",0);
@@ -1661,7 +1923,130 @@ void DE_ChampionNoraDeath(Entity Player){
     Dialogue(Player,Hero,Nochar,true,"\033[90m(The arena is scattered with desmembered tentacles and remains of the\033[1;95m Champion\033[90m)","","\033[0m",0);
     Dialogue(Player,Hero,Nochar,true,"\033[90m(You walked away to claim your prize)","","\033[0m",0);
 }
+void DE_VioletTonicAwarding(Entity& Player){
+    string ClassMention;
+    switch (Player.Misc.Class){
+        case Gladiator:
+        ClassMention = "Gladiator";
+        break;
+        case Wanderer:
+        ClassMention = "Wanderer";
+        break;
+        case Berserker:
+        ClassMention = "Berserker";
+        break;
+        case BlackKnight:
+        ClassMention = "Black Knight";
+        break;
+        default:
+        ClassMention = "Warrior";
+        break;
+    }
 
+    int Choice = 0;
+
+    Dialogue(Player,Hero,Nochar,true,"\033[90m(The crowd cheers you on excitedly from your impossible Victory)\033[0m","\033[90m(You're filled with praise and pride)\033[0m","",0);
+    Dialogue(Player,Hero,Aiden,true,"\033[90m(The \033[93mTwin Kings\033[90m approach to congratulate you)\033[0m","","",0);
+    Dialogue(Player,Hero,Aiden,false,"Congratulations on your Accomplishment " + ClassMention,"You achieved something thought to be impossible!","",0);
+    Dialogue(Player,Aiden,Addison,false,"Yes, yes. Congratulations Warrior","","",0);
+    Dialogue(Player,Hero,Aiden,false,"It's been a while since we had a new Champion","Addison! How long has it been since the last champion?","",0);
+    Dialogue(Player,Aiden,Addison,false,"Oh uh, Hmmm","It's been... 5 decades, Brother","He's our second Champion ever, actually",0);
+    Dialogue(Player,Hero,Aiden,false,"Oh, really?","Well anyways, I believe this... Canine creature, is yours","Since you Won and I don't see any use for it, you may keep it again",0);
+    Dialogue(Player,Hero,Dawg,false,"Arf","","",0);
+    Dialogue(Player,Hero,Dawg,true,"OHH","DOG!","",0);
+    DialogueChoice(Player,Hero,Dawg,true,"Pet the Dog","","",Choice);
+    Dialogue(Player,Hero,Dawg,true,"\033[90m(You pet your trusty Dog, happy to have him back)\033[0m","","",0);
+    Dialogue(Player,Hero,Dawg,false,"Woof","","",0);
+    Dialogue(Player,Hero,Aiden,false,"Good dog, Good dog...","Let us wrap this up quickly, here's the \033[95mPromised Prize\033[0m","And now let us start the ceremony",0);
+    Dialogue(Player,Hero,Nochar,true,"\033[90m(\033[93mKing Aiden\033[90m puts the \033[95mViolet Tonic\033[90m in your \033[96mItems Bag\033[90m)\033[0m","","",0);
+    Player.ItemBag.Item1 = ItmVioletTonic;
+    Player.ItemBag.Item2 = NoItem;
+    Player.ItemBag.Item3 = NoItem;
+    Player.ItemBag.Item4 = NoItem;
+    Player.ItemBag.Item5 = NoItem;
+    Player.Misc.Itemslots = 0;
+    Dialogue(Player,Aiden,Nochar,true,"DEAR AUDIENCE PRESENT TODAY IN THIS COLOSSEUM","I PRESENT TO YOU OUR NEWEST CHAMPION IN 50 YEARS","",0);
+    DialogueDramatic(Player,Aiden,Hero,true,"GIVE A ROUND OF APPLAUSES FOR " + Player.Name + "!!!","\033[1;93m","","",90000,0);
+    DialogueNoFace(Player,Nochar,Nochar,true,"And with this victory, "+Player.Name+"'s freedom and its pet Dog were returned","","",0);
+    DialogueNoFace(Player,Nochar,Nochar,true,Player.Name+" packed its remaining stuff, played with the Dog, and headed to the","Colosseum's Entrance to leave, ready to start over its life again","",0);
+    DialogueNoFace(Player,Nochar,Nochar,true,"THE END","","",0);
+}
+
+void DE_WitchEndingBattleBegin(Entity& Player){
+    int Choice = 0;
+    DialogueNoFace(Player,Nochar,Nochar,true,"","","",0);
+    Dialogue(Player,Hero,Nochar,true,"","","",0);
+    Dialogue(Player,Hero,Witch_down,true,"\033[90m(You spot the Witch, standing at the entrance while looking at the ground)\033[0m","","",0);
+    Dialogue(Player,Hero,Witch_down,true,"Witch, I'm glad to find you here","I wanted to thank you for your assistance, and give you the \033[95mViolet Tonic\033[0m as part of","our deal",0);
+    Dialogue(Player,Hero,Witch_down,false,". . .","","",0);
+    Dialogue(Player,Hero,Witch,false,"I no longer need it, bastard","","",0);
+    Dialogue(Player,Hero,Witch,true,"What?","","",0);
+    Dialogue(Player,Hero,Witch_down,false,"I told you I wanted to use it to cure the \033[95mChampion\033[0m, but you killed her now","So it's no longer of any use to me...","",0);
+    Dialogue(Player,Hero,Witch_down,true,"Why would you even want to cure the \033[95mChampion\033[0m?","","",0);
+    Dialogue(Player,Hero,Witch,false,"Because... because she was my daughter god damn it...","","",0);
+    Dialogue(Player,Hero,Witch_down,true,". . .","","",0);
+    Dialogue(Player,Hero,Witch,false,"Listen,","Aren't you at least sorry for what you've done?","Now that you know this?",0);
+    DialogueChoice(Player,Hero,Witch,true,"Yes, I'm sorry","No, I'm not","",Choice);
+    switch (Choice){
+        case 1:
+        Dialogue(Player,Hero,Witch_down,false,". . . Good","I'm relieved you said that","",0);
+        Dialogue(Player,Hero,Witch,false,"But I can't let you leave just like that","You don't deserve freedom","",0);
+        DialogueDramatic(Player,Hero,Witch_fierce,false,"So fall, damned Warrior","\033[1;96m","","",160000,1000000);
+        break;
+
+        case 2:
+        Dialogue(Player,Hero,Witch_down,false,". . . I see","I guess I was too naive to trust you","",0);
+        Dialogue(Player,Hero,Witch,false,"Very well then","","",0);
+        DialogueDramatic(Player,Hero,Witch_fierce,false,"May you fall, damned Warrior","\033[1;96m","","",160000,1000000);
+        break;
+    }
+    WitchIncomingUI();
+}
+
+
+void ENDING_TrueEnding(Entity& Player){
+
+
+    THEENDscreen("\033[1;92m");
+    Credits();
+}
+void ENDING_KingEnding(Entity& Player){
+    Dialogue(Player,Hero,Dawg,false,"Arf?","","",0);
+    SlashAnim("\033[1;93m", 60000, true, true);
+    usleep(80000);
+    Dialogue(Player,Hero,Dawg_dead,false," ","","",0);
+    Dialogue(Player,Hero,Dawg_dead,true,"No...","","",0);
+    Dialogue(Player,Hero,Dawg_dead,false," ","","",0);
+
+    THEENDscreen("\033[1;93m");
+    Credits();
+}
+void ENDING_ChampionEnding(Entity& Player){
+    int Choice;
+    Dialogue(Player,Hero_Champ,Witch_broken,false,". . .","","",0);
+    Dialogue(Player,Hero_Champ,Witch_broken,false,"Damn it...","I didn't think you'd drink it...","",0);
+    Dialogue(Player,Hero_Champ,Witch_broken,true,"","\033[1;95m. . .\033[0m","",0);
+    Dialogue(Player,Hero_Champ,Witch_broken,false,"You are doomed for good now","You unhuman piece of crap...","",0);
+    Dialogue(Player,Hero_Champ,Witch_broken,true,"","\033[1;95m. . .\033[0m","",0);
+    DialogueDramatic(Player,Hero_Champ,Witch_broken,false,"God damn you "+Player.Name+"...","","","",200000,1000000);
+    Dialogue(Player,Hero_Champ,Nochar,true,"\033[90m(You watch the Witch, falling down on her knee as she withers away)\033[0m","\033[90m(You feel nothing)\033[0m","",0);
+    Dialogue(Player,Hero_Champ,Nochar,true,"\033[90m(Suddenly, you hear a couple voices coming your way)\033[0m","","",0);
+    Dialogue(Player,Hero_Champ,Aiden,false,"Well well well, if it isn't our esteemed Champion... hmm...","","",0);
+    Dialogue(Player,Aiden,Addison,false,"Champion " + Player.Name + ", brother","","",0);
+    Dialogue(Player,Aiden,Addison,true,"I know Addison, I know","","",0);
+    Dialogue(Player,Hero_Champ,Aiden,true,"","\033[1;95mMore... I want more...\033[0m","",0);
+    Dialogue(Player,Hero_Champ,Aiden,false,"We know you do,","So come stay with us, obey us and we'll let you in on the next tournament","",0);
+    Dialogue(Player,Aiden,Addison,false,"W-Which in turn will let you aquire the next \033[95mViolet Tonic\033[0m, since you'll likely win","","",0);
+    Dialogue(Player,Hero_Champ,Aiden,false,"Exactly","So, do we have ourselves a deal?","",0);
+    Dialogue(Player,Hero_Champ,Aiden,true,"","\033[1;95m. . .\033[0m","",0);
+    DialogueChoice(Player,Hero_Champ,Aiden,true,"\033[1;95mYes\033[0m","\033[1;95mYes\033[0m","\033[1;95mYes\033[0m",Choice);
+    Dialogue(Player,Hero_Champ,Aiden,true,"","\033[1;95mYes...\033[0m","",0);
+    Dialogue(Player,Hero_Champ,Aiden,false,"Good","","",0);
+    DialogueNoFace(Player,Nochar,Nochar,true,"After this sudden turn of events, "+Player.Name+"'s freedom quickly disapeared as it lost","itself with the Tonic and is now under the Twin King's orders","",0);
+    DialogueNoFace(Player,Nochar,Nochar,true,"And time went on for the \"new\" " + Player.Name,"Who ended up becoming nothing less than a Beast, a Slave and a Fool of itself","",0);
+    THEENDscreen("\033[1;95m");
+    Credits();
+}
 
 void EE_Starwalker(Entity Player){
     Dialogue(Player,Hero,Starwalker,false,"These Gladiators are \033[93mpissing\033[0m me off","","",0);
@@ -2067,23 +2452,3 @@ void LockpickGame3(bool& unlocked){
 //   |Rnk:   |   |Rnk:   |   |Rnk:   |    (6) - Item - Name (Description) - 100g      
 //   `-------`   `-------`   `-------`   +---------------------------------------------------------------------------+
 //      (1)         (2)         (3)                                  (0) - Reroll - 3g                                
-
-// Name            FG  BG
-// Black           30  40
-// Red             31  41
-// Green           32  42 
-// Yellow          33  43
-// Blue            34  44
-// Magenta         35  45
-// Cyan            36  46
-// White           37  47
-// Bright Black    90  100
-// Bright Red      91  101
-// Bright Green    92  102
-// Bright Yellow   93  103
-// Bright Blue     94  104
-// Bright Magenta  95  105
-// Bright Cyan     96  106
-// Bright White    97  107
-//
-//\033[1;XX = Bold Text

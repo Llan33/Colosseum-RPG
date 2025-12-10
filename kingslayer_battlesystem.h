@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string>
+#include <vector>
+#include <algorithm>
 #include <Windows.h>
 #include "mmsystem.h"
 
@@ -16,7 +18,7 @@
 using namespace std;
 
    //- Battle Subjects -
-Entity Player1(97,43,427,18,40,54.5,18.5,24, PLAYER1, "Player1");
+Entity Player1(1,43,4427,5,40,100,18.5,24, PLAYER1, "Player1");
 Entity Player2(50,15,10,5,2,5,5,9, PLAYER2, "Player2");
 Entity EnemyA(20,5,4,3,0,0,0,0, ENEMY, "Enemy");
 Entity BossA(30,5,6,6,4,5,5,0, BOSS, "Boss");
@@ -27,22 +29,20 @@ Entity TheChampion(9999,999,999,999,0,999,0,3309, CHAMPION, "\033[1;95mThe Champ
 
 //- General Functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ||
 
-void MainMenuUI(){
-    Start:
+void TitleScreenUI(){
     clear();
-    usleep(100000);
     cout << endl;
-    cout << "    ______  |\\	      _____   __      __                      _    _  __   _    _   _______     " << endl; usleep(30000);
-    cout << "   /  ____\\ | |   ---/ ___ \\-\\  \\--  /  / _____        ___   | | / / |  | | \\  | | |  _____\\  " << endl; usleep(50000);
-    cout << "---- /____  | |     / /___\\ \\ \\  \\  /  /    |   |   | |      | |/ /  |  | |  \\ | | | | ____    " << endl; usleep(70000);
-    cout << "  \\_____  \\ | |     |  ___  |  \\  \\/  /     |   |---| |--    |   |   |  | |   \\| | | | \\_  |  " << endl; usleep(90000);
-    cout << "   ____/ ---| |--___| |   | |-- \\    /      |   |   | |___   | |\\ \\  |  | | |\\   | | |___| |    " << endl; usleep(110000);
-    cout << "  /______/  |______/|_|   |_|    /  /                        |_| \\_\\ |  | |_| \\__| |___   _|     " << endl; usleep(130000);
-    cout << "                                /  /                                _|  |_             \\ |         " << endl; usleep(140000);
-    cout << "                               /  /                                \033[33m |\033[31m'\033[35m'\033[36m'\033[32m'\033[33m|  \033[0m            ||          " << endl; usleep(150000);
-    cout << "                              /__/                                \033[33m  |/\\/\\| \033[0m             ||        " << endl; usleep(160000);
-    cout << "                                                                                        ||         " << endl; usleep(170000);
-    cout << "                                                                         _  _ __ _______||_______ __ _  _ " << endl; usleep(250000);
+    cout << "    ______  |\\	      _____   __      __                      _    _  __   _    _   _______     " << endl;
+    cout << "   /  ____\\ | |   ---/ ___ \\-\\  \\--  /  / _____        ___   | | / / |  | | \\  | | |  _____\\  " << endl;
+    cout << "---- /____  | |     / /___\\ \\ \\  \\  /  /    |   |   | |      | |/ /  |  | |  \\ | | | | ____    " << endl;
+    cout << "  \\_____  \\ | |     |  ___  |  \\  \\/  /     |   |---| |--    |   |   |  | |   \\| | | | \\_  |  " << endl;
+    cout << "   ____/ ---| |--___| |   | |-- \\    /      |   |   | |___   | |\\ \\  |  | | |\\   | | |___| |    " << endl;
+    cout << "  /______/  |______/|_|   |_|    /  /                        |_| \\_\\ |  | |_| \\__| |___   _|     " << endl;
+    cout << "                                /  /                                _|  |_             \\ |         " << endl;
+    cout << "                               /  /                                \033[33m |\033[31m'\033[35m'\033[36m'\033[32m'\033[33m|  \033[0m            ||          " << endl;
+    cout << "                              /__/                                \033[33m  |/\\/\\| \033[0m             ||        " << endl;
+    cout << "                                                                                        ||         " << endl;
+    cout << "                                                                         _  _ __ _______||_______ __ _  _ " << endl;
     cout << "        .-------.              .-------.              .-------.         +--------------------------------+           " << endl;
     cout << "        |       |              |       |              |       |                    (4) Options            " << endl;
     cout << "        | Main  |              |2Player|              | Extras|         *--------------------------------*" << endl; 
@@ -51,7 +51,6 @@ void MainMenuUI(){
     cout << "        `-------`              `-------`              `-------`                     (0)  Quit             " << endl;
     cout << "           (1)                    (2)                    (3)            +--------------------------------+" << endl;
     cout << "                                                                        " << endl;
-
 }
 
 void XPBar(Entity& Player){
@@ -452,7 +451,7 @@ void SpellUseEffect(Entity& User, Entity& Target, Spell& useSpell){
         break;
 
         case ArcBlast:
-        SplEffMagicaArcaneWarlockBlast(User, Target, 1.8);
+        SplEffMagicaArcaneWarlockBlast(User, Target, 2.0);
         break;
 
         case TempnRageCut:
@@ -524,7 +523,7 @@ void SpellUseEffect(Entity& User, Entity& Target, Spell& useSpell){
         break;
 
         case WarBlast:
-        SplEffMagicaArcaneWarlockBlast(User, Target, 3.0);
+        SplEffMagicaArcaneWarlockBlast(User, Target, 4.0);
         break;
 
         case VengCut:
@@ -1192,31 +1191,18 @@ void StatMenu(Entity& User){
 void RevivebyUnderworldSkull(Entity&Player, Entity&Killer){
 
     if(Killer.Misc.Type == CHAMPION){ //Champion Nullifyng
-        if (Player.Misc.Type == PLAYER1){
-                RlcUnderworldSkull.Obtained.P1 = false;
-        }else if (Player.Misc.Type == PLAYER2){
-            RlcUnderworldSkull.Obtained.P2 = false;    
-        }
+        Player.Misc.Revive = 0;
     }
 
 
-    if (Player.Misc.Type == PLAYER1){
-        if (RlcUnderworldSkull.Obtained.P1 == true){
-            RlcUnderworldSkull.Obtained.P1 = false;
-            goto Start;
-        }
-    }else if (Player.Misc.Type == PLAYER2){
-        if (RlcUnderworldSkull.Obtained.P2 == true){
-            RlcUnderworldSkull.Obtained.P2 = false;
-            goto Start;
-        }
+    if (Player.Misc.Revive <= 0){
+        return;
     }
-    goto End;
 
-    Start:
     clear();
     GameOver = false;
     Player.Stat.HP = 0;
+    Player.Misc.Revive--;
     cout << "\n\n\n\n\n\n\n\n\n\n\n" << "\t\t\t\t\t\t\t";
 
         EntityBoxEdgeUI(Player);
@@ -1247,8 +1233,6 @@ void RevivebyUnderworldSkull(Entity&Player, Entity&Killer){
         sleep(3);
         clear();
 
-    End:
-    return;
 }
 void PlayerDeath(Entity& Player, Entity& Killer){
 
@@ -1315,6 +1299,15 @@ void PlayerDeath(Entity& Player, Entity& Killer){
 
 void StatusEffectsDamage(Entity& Target){
 
+    if(Target.Misc.AllStatusImmunity == true){
+        cout << Target.Name << " isn't affected by status effects." << endl;
+        Target.Status.Burn = 0;
+        Target.Status.Freeze = 0;
+        Target.Status.Poison = 0;
+        Target.Status.Shock = 0;
+        sleep(1);
+    }
+
     if (Target.Status.Poison > 0){
         Damage = Target.Stat.MAXHP * 0.08;
         if(Damage < 5){
@@ -1357,6 +1350,13 @@ void StatusEffectsDamage(Entity& Target){
 
     if (Target.Status.Shock > 0){
         Target.Status.Shock--;
+    }
+
+    if (Target.Stat.HPRegen > 0 && Target.Stat.HP > 0){
+        Target.Stat.HP += Target.Stat.HPRegen;
+        cout << Target.Name << " healed " << Target.Stat.HPRegen << " HP" << endl;
+        usleep(800000);
+        StatOverflowCheck(Target);
     }
 
     Damage = 0;
@@ -1527,11 +1527,11 @@ void LevelUP(Entity& Player){
         break;
 
         case BlackKnight:
-        LevelUPStatSpread(Player, 5, 3, 3, 3, 3, 0.5, 0.5);
+        LevelUPStatSpread(Player, 5, 3, 3, 3, 2, 0.5, 0.5);
         break;
 
         case God:
-        LevelUPStatSpread(Player, 10, 5, 5, 5, 5, 3.5, 2.5);
+        LevelUPStatSpread(Player, 10, 5, 5, 5, 3, 3.5, 2.5);
         break;
 
         default:
@@ -1823,19 +1823,106 @@ void RelicDrop(Entity& Player){
     clear();
 }
 
+void GiveCurrentBossEffect(Entity& enemy){
+    switch(CurrentBossEffect){
+        case MoreHP:
+        enemy.Name = "Buff Goblin";
+        enemy.Misc.NameLenght = size(enemy.Name);
+        enemy.Misc.Color = "\033[92m";
+        enemy.Stat.MAXHP *= 1.5;
+        break;
+
+        case MoreATK:
+        enemy.Name = "Wild \033[0mBeast";
+        enemy.Misc.NameLenght = size(enemy.Name)-4;
+        enemy.Misc.Color = "\033[90m";
+        enemy.Stat.ATK *= 1.5;
+        break;
+        
+        case MoreDEF:
+        enemy.Name = "Noble\033[0m Knight";
+        enemy.Misc.NameLenght = size(enemy.Name)-4;
+        enemy.Misc.Color = "\033[93m";
+        enemy.Stat.DEF *= 2;
+        break;
+        
+        case MoreCRIT:
+        enemy.Name = "Berserker";
+        enemy.Misc.NameLenght = size(enemy.Name);
+        enemy.Misc.Color = "\033[1;91m";
+        enemy.Stat.CRIT += 20;
+        break;
+        
+        case MoreDODGE:
+        enemy.Name = "Gladiator";
+        enemy.Misc.NameLenght = size(enemy.Name);
+        enemy.Misc.Color = "\033[1;93m";
+        enemy.Stat.DODGE += 20;
+        break;
+        
+        case MoreAllStats:
+        enemy.Name = "Wanderer";
+        enemy.Misc.NameLenght = size(enemy.Name);
+        enemy.Misc.Color = "\033[1;94m";
+        enemy.Stat.HP *= 1.2;
+        enemy.Stat.ATK *= 1.2;
+        enemy.Stat.DEF *= 1.4;
+        enemy.Stat.CRIT += 5;
+        enemy.Stat.DODGE += 5;
+        break;
+        
+        case RegenHP:
+        enemy.Name = "War Cleric";
+        enemy.Misc.NameLenght = size(enemy.Name);
+        enemy.Misc.Color = "\033[92m";
+        enemy.Stat.HPRegen = enemy.Stat.MAXHP * 0.15;
+        break;
+        
+        case GoldThief:
+        enemy.Name = "Hobin\033[93m Rood\033[0m";
+        enemy.Misc.NameLenght = size(enemy.Name)-9;
+        enemy.Misc.Color = "\033[92m";
+        enemy.Misc.Class = Thief;
+        break;
+        
+        case StatusImmunity:
+        enemy.Name = "War Monk";
+        enemy.Misc.NameLenght = size(enemy.Name);
+        enemy.Misc.Color = "\033[96m";
+        enemy.Misc.AllStatusImmunity = true;
+        break;
+        
+        case ReviveOnce:
+        enemy.Name = "Necro \033[92mSpawn\033[0m";
+        enemy.Misc.NameLenght = size(enemy.Name)-9;
+        enemy.Misc.Color = "\033[1;90m";
+        enemy.Misc.Revive++;
+        break;
+        
+    }
+    if (Floor > 0){
+        enemy.Name = "Royal\033[0m Knight";
+        enemy.Misc.NameLenght = size(enemy.Name)-4;
+        enemy.Misc.Color = "\033[1;91m";
+    }
+}
 void EnemyScaling(Entity& enemy){
 
+    enemy.Stat.HPRegen = 0;
+    enemy.Misc.Revive = 0;
+    enemy.Misc.AllStatusImmunity = false;
+    enemy.Misc.Class = NOCLASS;
     EntityType Type = enemy.Misc.Type;
 
-Entity F3(400,30,80,3,20,5,5,0, Type, "Enemy");
+Entity F3(395,30,75,3,20,5,5,0, Type, "Enemy");
 Entity F2(280,25,60,3,14,4,4,0, Type, "Enemy");
 Entity F1(156,20,40,3,10,3,3,0, Type, "Enemy");
 
-Entity W6(1,70,1,1,0,0,0,0, FALLEN, "Fallen");
-Entity W5(210,25,58,3,0,4,4,0, Type, "Enemy");
-Entity W4(104,20,35,3,8,3,3,0, Type, "Enemy");
-Entity W3(50,15,20,3,5,2,2,0, Type, "Enemy");
-Entity W2(26,10,10,3,2,1,1,0, Type, "Enemy");
+Entity W6(1,99,0,250,10,0,0,0, FALLEN, "Fallen"); W6.Misc.Color = "\033[95m";
+Entity W5(210,25,58,7,0,4,4,0, Type, "Enemy");
+Entity W4(104,20,35,6,8,3,3,0, Type, "Enemy");
+Entity W3(50,15,20,5,5,2,2,0, Type, "Enemy");
+Entity W2(26,10,10,4,2,1,1,0, Type, "Enemy");
 Entity W1(16,10,5,3,0,0,0,0, Type, "Enemy");
 
     float AttackScale = 0.5;
@@ -1848,21 +1935,21 @@ Entity W1(16,10,5,3,0,0,0,0, Type, "Enemy");
         case 3:
         enemy = F3;
         AttackScaleMult = 4;
-        DEFScaleMult = 4;
+        DEFScaleMult = 2;
         enemy.Misc.Level = 7;
         break;
 
         case 2:
         enemy = F2;
         AttackScaleMult = 3;
-        DEFScaleMult = 4;
+        DEFScaleMult = 2;
         enemy.Misc.Level = 6;
         break;
 
         case 1:
         enemy = F1;
         AttackScaleMult = 3;
-        DEFScaleMult = 3;
+        DEFScaleMult = 2;
         enemy.Misc.Level = 5;
         break;
         
@@ -1876,28 +1963,28 @@ Entity W1(16,10,5,3,0,0,0,0, Type, "Enemy");
                 case 5:
                 enemy = W5;
                 AttackScaleMult = 4;
-                DEFScaleMult = 4;
+                DEFScaleMult = 2;
                 enemy.Misc.Level = 5;
                 break;
 
                 case 4:
                 enemy = W4;
                 AttackScaleMult = 3;
-                DEFScaleMult = 4;
+                DEFScaleMult = 2;
                 enemy.Misc.Level = 4;
                 break;
 
                 case 3:
                 enemy = W3;
                 AttackScaleMult = 2;
-                DEFScaleMult = 3;
+                DEFScaleMult = 2;
                 enemy.Misc.Level = 3;
                 break;
 
                 case 2:
                 enemy = W2;
                 AttackScaleMult = 2;
-                DEFScaleMult = 2;
+                DEFScaleMult = 1;
                 enemy.Misc.Level = 2;
                 break;
 
@@ -1913,21 +2000,25 @@ Entity W1(16,10,5,3,0,0,0,0, Type, "Enemy");
         enemy.Stat.MAXHP *= 1;
         enemy.Stat.ATK += (AttackScale * WaveRound) * AttackScaleMult;
         enemy.Stat.DEF += (DEFScale * WaveRound) * DEFScaleMult;
+        enemy.Stat.HPRegen = 0;
         break;
         case 2:
         enemy.Stat.MAXHP *= 1.20;
         enemy.Stat.ATK += (AttackScale * WaveRound) * AttackScaleMult;
         enemy.Stat.DEF += (DEFScale * WaveRound) * DEFScaleMult;
+        enemy.Stat.HPRegen = 0;
         break;
         case 3:
         enemy.Stat.MAXHP *= 1.40;
         enemy.Stat.ATK += (AttackScale * WaveRound) * AttackScaleMult;
         enemy.Stat.DEF += (DEFScale * WaveRound) * DEFScaleMult;
+        enemy.Stat.HPRegen = 0;
         break;
         case 4:
         enemy.Stat.MAXHP *= 1.60;
         enemy.Stat.ATK += (AttackScale * WaveRound) * AttackScaleMult;
         enemy.Stat.DEF += (DEFScale * WaveRound) * DEFScaleMult;
+        enemy.Stat.HPRegen = 0;
         break;
         case 5:
         enemy.Stat.MAXHP *= 2.25;
@@ -1935,6 +2026,8 @@ Entity W1(16,10,5,3,0,0,0,0, Type, "Enemy");
         enemy.Stat.DEF += (DEFScale * WaveRound) * DEFScaleMult * 1.25;
         enemy.Stat.CRIT = 5;
         enemy.Misc.Level++;
+        enemy.Stat.HPRegen = 0;
+        GiveCurrentBossEffect(enemy);
         break;
     }
 
@@ -2297,7 +2390,7 @@ void EnemyTurnBattle(Entity& Enemy, Entity& Player){
     }
 
     if (Enemy.Status.Freeze > 0){//Freeze Check
-        cout << Enemy.Name << " is \033[1;96mFrozen\033[0m" << endl << endl;
+        cout << Enemy.Misc.Color << Enemy.Name << "\033[0m is \033[1;96mFrozen\033[0m" << endl << endl;
         sleep(1);
         Enemy.Status.Freeze--;
         return;
@@ -2318,12 +2411,12 @@ void EnemyTurnBattle(Entity& Enemy, Entity& Player){
         switch (EnemyAction){ //0 - Defend  1 - Attack
 
             case 0:
-                cout << Enemy.Name << " used Defend" << "\n\n";
+                cout << Enemy.Misc.Color << Enemy.Name << "\033[0m used Defend" << "\n\n";
                 Defend(Enemy);
                 break;
 
             case 1:
-                cout << Enemy.Name << " used Attack" << "\n\n";
+                cout << Enemy.Misc.Color << Enemy.Name << "\033[0m used Attack" << "\n\n";
                 BasicAttack(Enemy, Player);
                 break;
 
@@ -2368,12 +2461,12 @@ void EnemyTurnBattlev2(Entity& Enemy, Entity& Enemy2, Entity& Player){
         switch (EnemyAction){ //0 - Defend  1 - Attack
 
             case 0:
-                cout << Enemy.Name << " used Defend" << "\n\n";
+                cout << Enemy.Misc.Color << Enemy.Name << "\033[0m used Defend" << "\n\n";
                 Defend(Enemy);
                 break;
 
             case 1:
-                cout << Enemy.Name << " used Attack" << "\n\n";
+                cout << Enemy.Misc.Color << Enemy.Name << "\033[0m used Attack" << "\n\n";
                 BasicAttack(Enemy, Player);
                 break;
 
@@ -2392,7 +2485,7 @@ void ChampionTurnBattle(Entity& Player, Entity& Champ, int& ChargeTurns){
     Damage = 0;
     Champ.Stat.Block = Champ.Stat.DEF;
     bool Insight;
-    int HPRegen = 100;
+    Champ.Stat.HPRegen = 250;
 
     if (Champ.Status.Shock > 0){
         Champ.Stat.Block /= 3;
@@ -2401,15 +2494,13 @@ void ChampionTurnBattle(Entity& Player, Entity& Champ, int& ChargeTurns){
     //BattleUI(Player, Champ, Insight);
 
     if (Champ.Status.Freeze > 0){//Freeze Check
-        cout << Champ.Name << " is Frozen" << endl << endl;
+        cout << Champ.Name << " is \033[1;96mFrozen\033[0m" << endl;
+        usleep(500000);
+        cout << Champ.Name << " tries to heat up a bit" << endl << endl;
         sleep(1);
-        Champ.Status.Freeze--;
+        Champ.Status.Freeze-=2;
         return;
     }
-
-    Champ.Stat.HP += HPRegen;
-    cout << Champ.Name << " healed " << HPRegen << " HP" << endl;
-    usleep(600000);
 
     switch (ChargeTurns){ //Dialogue(Player,Hero,Champion,false,"\033[1;95m","","\033[0m",0);
         case 5:
@@ -2455,7 +2546,53 @@ void ChampionTurnBattle(Entity& Player, Entity& Champ, int& ChargeTurns){
     Player.Stat.HP -= Damage;
     StatusEffectsDamage(Player);
 }
+void EndingWitchTurnBattle(Entity& Witch,Entity& Player){
+    Damage = 0;
+    Witch.Stat.Block = Witch.Stat.DEF;
+    bool Insight;
 
+    clear();
+
+    const int MAXHPincrease = Witch.Stat.MAXHP/4;
+    const int ATKincrease = 3;
+    const int MAGICincrease = Witch.Stat.MA/4;
+    const int DEFincrease = 5;
+    const int DODGEincrease = 4;
+
+    if (Witch.Status.Shock > 0){
+        Witch.Stat.Block /= 3;
+    }
+
+    BattleUI(Player, Witch, Insight);
+    usleep(350000);
+
+    if (Witch.Status.Freeze > 0){//Freeze Check
+        cout << Witch.Name << " \033[1;96munfreezes\033[0m herself" << endl << endl;
+        sleep(1);
+        Witch.Status.Freeze = 0;
+        return;
+    }
+
+    cout << "\033[1;95m" << Witch.Name << " upgrades her own stats." << "\n\n"; sleep(1);
+
+    cout << "\033[1;92mMAXHP + " << MAXHPincrease << endl; Witch.Stat.MAXHP += MAXHPincrease; usleep(200000);
+    cout << "\033[1;91m  ATK + " << ATKincrease << endl; Witch.Stat.ATK += ATKincrease; usleep(200000);
+    cout << "\033[1;94mMAGIC + " << MAGICincrease << endl; Witch.Stat.MA += MAGICincrease; usleep(200000);
+    cout << "\033[1;90m  DEF + " << DEFincrease << endl; Witch.Stat.DEF += DEFincrease; usleep(200000);
+    cout << "\033[1;93mDODGE + " << DODGEincrease << "\n\n"; Witch.Stat.DODGE += DODGEincrease; usleep(200000);
+
+    cout << "\033[1;95m" << Witch.Name << "\033[1;92m Fully healed herself.\033[0m" << "\n\n"; sleep(1);
+    Witch.Stat.HP = Witch.Stat.MAXHP;
+
+    SplEffMagicaArcaneWarlockBlast(Witch,Player,1 + Witch.Stat.MA/100);
+
+    StatOverflowCheck(Witch);
+
+    Player.Stat.HP -= Damage;
+    StatusEffectsDamage(Player);
+
+    clear();
+}
 
 
 void Battle(Entity& Player, Entity& Enemy){
@@ -2480,9 +2617,16 @@ void Battle(Entity& Player, Entity& Enemy){
 
             PlayerTurnBattle(Player, Enemy);
 
+        if(Enemy.Stat.HP <= 0 && Enemy.Misc.Revive > 0){//EnemyRevive
+            Enemy.Misc.Revive--;
+            cout << Enemy.Name << " seems to be slayed, ";
+            usleep(500000);
+            cout << "but it stands buck up, revived" << endl;
+            Enemy.Stat.HP = Enemy.Stat.MAXHP/2;
+        }
         if (Enemy.Stat.HP <= 0) {//Enemy Death
             Enemy.Stat.HP = 0;
-            cout << Enemy.Name << " has been slayed." << "\n\n";
+            cout << Enemy.Misc.Color << Enemy.Name << "\033[0m has been slayed." << "\n\n";
             sleep(1);
             break;
         }
@@ -2528,7 +2672,16 @@ void Battle1v2(Entity& Player, Entity& Enemy, Entity& Enemy2){
                 Switch = false;
                 continue;
             } 
-
+        
+        if(Enemy.Stat.HP <= 0 && Enemy.Misc.Revive > 0){//EnemyRevive
+            Enemy.Misc.Revive--;
+            usleep(500000);
+            cout << Enemy.Misc.Color << Enemy.Name << "\033[0m seems to be slayed, ";
+            Sleep(1);
+            cout << "but it stands buck up, revived" << endl;
+            Sleep(1);
+            Enemy.Stat.HP = Enemy.Stat.MAXHP/2;
+        }
         if (Enemy.Stat.HP <= 0 && Enemy1Act == true) {//Enemy Death
             Enemy.Stat.HP = 0;
             cout << Enemy.Name << " has been slayed." << "\n\n";
@@ -2536,6 +2689,13 @@ void Battle1v2(Entity& Player, Entity& Enemy, Entity& Enemy2){
             Target1 = false;
             Enemy1Act = false;
             Enemies--;
+        }
+        if(Enemy2.Stat.HP <= 0 && Enemy2.Misc.Revive > 0){//Enemy2Revive
+            Enemy2.Misc.Revive--;
+            cout << Enemy2.Name << " seems to be slayed, ";
+            usleep(500000);
+            cout << "but it stands buck up, revived" << endl;
+            Enemy2.Stat.HP = Enemy2.Stat.MAXHP/2;
         }
         if (Enemy2.Stat.HP <= 0 && Enemy2Act == true) {//Enemy2 Death
             Enemy2.Stat.HP = 0;
@@ -2557,8 +2717,49 @@ void Battle1v2(Entity& Player, Entity& Enemy, Entity& Enemy2){
     VictoryScreen(Player, Enemy);
 }
 
+void KingChoice(Entity& Player, bool& trueroute){
+    Entity Fakeout(1,33,1,1,1,1,1,1,KING,"King Aiden");
+    Fakeout.Misc.Color = "\033[1;93m";
+    PlayerTurn = false;
+    int Action;
 
+    DE_KingRoomArrival(Player);
+    KingAidenIncomingUI();
+
+    while (true){
+        clear();
+        BattleUI(Player, Fakeout, false);
+
+        cout << "\n";
+        cout << "\033[1;31m   .-'-.-'-.-'-.-'-.       \033[93m         .''-----------''.        \033[0m" << endl;
+        cout << "\033[1;31m  |     K I L L     |      \033[93m        |      Mercy      |       \033[0m" << endl;
+        cout << "\033[1;31m   '-.-'-.(1).-'-.-'       \033[93m         '..---.(0).---..'        \033[0m" << endl;
+cout << "\033[90m(\033[91mKill Him and the Dog Dies\033[90m, or \033[93mSpare him and leave with the dog\033[90m)\033[0m" << "\n\n";
+
+        cout << "You: ";
+        PlayerInput(Action);
+
+        switch (Action){
+            case 0:
+            trueroute = true;
+            return;
+            break;
+
+            case 1:
+            trueroute = false;
+            return;
+            break;
+
+            default:
+            cout << "Chose wisely";
+            usleep(300000);
+            continue;
+        }
+    }
+}
 void BattleKings(Entity& Player){
+
+    DE_KingsBattleBegin(Player);
 
     Entity K_Aiden = King_Aiden;
     Entity K_Addison = King_Addison;
@@ -2613,6 +2814,9 @@ void BattleKings(Entity& Player){
                 K_Addison.Stat.DEF *= 2;
                 K_Addison.Stat.DODGE+= 5;
                 K_Addison.Misc.Color = "\033[1;95m";
+            }else{
+                ScreenFlash(3);
+                DE_KingsBattleAidenFinalDeath(Player);
             }
         }
         if (K_Addison.Stat.HP <= 0 && Enemy2Act == true) {//Enemy2 Death
@@ -2631,6 +2835,9 @@ void BattleKings(Entity& Player){
                 K_Aiden.Stat.DEF *= 2;
                 K_Aiden.Stat.CRIT+= 5;
                 K_Aiden.Misc.Color = "\033[1;95m";
+            }else{
+                ScreenFlash(3);
+                DE_KingsBattleAddisonFinalDeath(Player);
             }
         }
 
@@ -2642,6 +2849,8 @@ void BattleKings(Entity& Player){
         }
 
     }
+
+    ENDING_TrueEnding(Player);
 
 }
 
@@ -2685,10 +2894,54 @@ void BattleChampion(Entity& Player){
 
     }
     
-    //VictoryScreen(Player, TheChampion);
+    VictoryScreen(Player, TheChampion);
 
 }
+void BattleEndingWitch(Entity& Player){
 
+    Entity Witch(80,99,12,35,10,0,10,729,WITCH,"Witch"); Witch.Misc.Color = "\033[1;95m";
+    bool EndBattle = false, LastChance = true;
+
+    Witch.Stat.Block = Witch.Stat.DEF;
+
+    DE_WitchEndingBattleBegin(Player);
+
+     while (true){
+        if (Player.Misc.Type == CHAMPION){
+            EndBattle = true;
+            Dialogue(Player,Hero_Champ,Witch_fierce,false,"\033[1;96mYou wouldn't...\033[0m","","",0);
+        }
+
+        if (Player.Stat.HP <= 0){//Player Death
+            if (LastChance == false){
+                Dialogue(Player,Nochar,Witch_fierce,false,"\033[1;96mTold you you wouldn't\033[0m","","",0);
+                PlayerDeath(Player, Witch);
+                if (GameOver == true){
+                    return;
+                }
+            }else{
+                LastChance = false;
+                Player.Stat.HP = 1;
+                Dialogue(Player,Hero,Witch_fierce,false,"\033[1;96mGive up\033[0m","\033[1;96mKneel down and accept your death\033[0m","",0);
+                Dialogue(Player,Hero,Witch_fierce,true,"I still have the \033[1;95mViolet Tonic\033[0m, it's not over yet","","",0);
+                Dialogue(Player,Hero,Witch_fierce,false,"\033[1;96mThe Tonic? You're not brave enough\033[0m","\033[1;96mEven if you survive you'll bear the curse of the Champion\033[0m","\033[1;96mYou wouldn't dare\033[0m",0);
+            }
+        }
+
+            PlayerTurnBattle(Player, Witch);
+
+        if (EndBattle == true){
+            ENDING_ChampionEnding(Player);
+            return;
+        }
+        if (Witch.Stat.HP <= 0) {
+            Witch.Stat.HP = 1;
+        }
+
+            EndingWitchTurnBattle(Witch, Player);
+
+    }
+}
 
 void BattlePVP(Entity& Player1, Entity& Player2){ 
     cout << "- -PVP Round- -" << "\n\n";
@@ -2710,7 +2963,7 @@ void BattlePVP(Entity& Player1, Entity& Player2){
         begin:
             PlayerTurnBattle(Player1, Player2);
 
-        if (Player1.Stat.HP <= 0){//Player Death
+        if (Player2.Stat.HP <= 0){//Player Death
             PlayerDeath(Player1, Player2);
             if (GameOver == true){
                 return;
@@ -3264,9 +3517,16 @@ void TagBought(Entity& Player, ShopTag& Tag){
 
         case SPELL:
         if (Player.Misc.Tokens < Tag.Price){// Not enough Tokens/SpellSlots
-            cout << "Noy enough Tokens, ";
+            cout << "Not enough Tokens, ";
             sleep(1);
             cout << "warrior.";
+            sleep(1);
+            return;
+        }
+        if (Player.Misc.Spellslots <= 0){
+            cout << "No Spell slots left, ";
+            sleep(1);
+            cout << "keep grinding.";
             sleep(1);
             return;
         }
@@ -4087,7 +4347,7 @@ void ShuffleTime(Entity& Player){
 void CellPrisontalk(Entity&Player){
     cout << "\t" << Player.Name << " went down to the catacombs";
     sleep(2);
-    Dialogue(Player, Hero, Nochar, true, ". . .","","",1750000);
+    Dialogue(Player, Hero, Nochar, true, ". . .","","",0);
     Dialogue(Player, Hero, Prisoner, true, "Hello?","","",0);
 
     CellRetry:
@@ -4160,7 +4420,7 @@ void CellRest(Entity& Player){
         usleep(interval);
     }
     for (int l = 0; l < 5; l++){
-        interval += 100000;
+        interval += 40000;
         usleep(interval);
         cout << " Z";
     }
@@ -4351,12 +4611,6 @@ void CellTimeUI(int floor, int wave, int keywave){
             cout << "    /      '''''      \\                             _.-'-'  ' ' '-.__                 '  |      " << endl;
             cout << "    \033[47m___________________\033[0m\033[90m          [Full Heal]        [Gets you a Shop]    [Talk with Prisoners]  \033[0m" << endl;
             cout << " \033[0m           (0)                      (1)                   (2)                    (3)          " << "\n\n";
-
-            cout << "                      (4) - \033[91mSTRENGHTEN WEAPON\033[0m (No icon yet cuz I'm lazy)              \033[90m" << endl;
-            cout << "|    |                        |                        |         |                             |" << endl;
-            cout << "|    |    |              |    |         |              |         |    |         |    |         |" << endl;
-            cout << "|    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |" << endl;
-            cout << "|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|\033[0m" << "\n\n";
         }else{
             cout << "\033[90m|----|----|----|----|----|----|----|----|----|----|----|----|----+----+----+----+----+----+----|\033[0m" << endl;
             cout << "\033[90m     |    |    |    |    |    |    |    |\033[1;37m  - -CELL- -\033[0;90m  |    |    | \033[1;37m 5 -> Stats \033[0;90m |\033[1;37m 6 -> Options  " << endl;
@@ -4376,27 +4630,27 @@ void CellTimeUI(int floor, int wave, int keywave){
             cout << "    /_________________\\                             _.-'-'  ' ' '-.__                 '  |      " << endl;
             cout << "   |___________________| \033[90m        [Full Heal]        [Gets you a Shop]    [Talk with Prisoners]  \033[0m" << endl;
             cout << "       Does Nothing? \033[0m                (1)                   (2)                    (3)          " << "\n\n";
-
-            cout << "                      (4) - \033[91mSTRENGHTEN WEAPON\033[0m (No icon yet cuz I'm lazy)              \033[90m" << endl;
+        }
+            cout << "                                       .-\033[91mSTRENGHTEN WEAPON\033[0m-.                          " << endl;
+            cout << "                                       '-- - - -(4)- - - --'                                       \033[90m" << endl;;
             cout << "|    |                        |                        |         |                             |" << endl;
             cout << "|    |    |              |    |         |              |         |    |         |    |         |" << endl;
             cout << "|    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |" << endl;
             cout << "|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|\033[0m" << "\n\n";
-        }
     }else{
-        cout << "                        \033[47m             \033[0m" << endl;
-        cout << "                       \033[47m               \033[0m" << endl;
-        cout << "                      \033[47m                 \033[0m" << endl;
-        cout << "                     \033[47m                   \033[0m" << endl;
-        cout << "                    \033[47m                     \033[0m" << endl;
-        cout << "                   \033[47m                       \033[0m" << endl;
-        cout << "                  \033[47m                         \033[0m   " << endl;
-        cout << "                  \033[47m                         \033[0m   " << endl;
-        cout << "                  \033[47m                         \033[0m   " << endl;
-        cout << "                  \033[47m                         \033[0m   " << endl;
-        cout << "                  \033[47m                         \033[0m   " << endl;
-        cout << "                  \033[47m                         \033[0m   " << endl;
-        cout << "                  \033[47m                         \033[0m" << endl;
+        cout << "                        \033[47m             \033[0m                              " << endl;
+        cout << "                       \033[47m               \033[0m                              " << endl;
+        cout << "                      \033[47m                 \033[0m                             " << endl;
+        cout << "                     \033[47m                   \033[0m                            " << endl;
+        cout << "                    \033[47m                     \033[0m                           " << endl;
+        cout << "                   \033[47m                       \033[0m                          " << endl;
+        cout << "                  \033[47m                         \033[0m                         " << endl;
+cout<<"\033[1;30m                  \033[47m    (0) - Next Floor     \033[0m                         " << endl;
+        cout << "                  \033[47m                         \033[0m  (5) - Stats            " << endl;
+        cout << "                  \033[47m                         \033[0m  (6) - Options          " << endl;
+        cout << "                  \033[47m                         \033[0m                         " << endl;
+        cout << "                  \033[47m                         \033[0m  (4) - \033[91mSTRENGHTEN WEAPON\033[0m" << endl;
+        cout << "                  \033[47m                         \033[0m                         " << endl;
         cout << " _________________\033[47m                         \033[0m________________" << endl;
         cout << "                  :::::::::::::::::::::::::" << endl;
         cout << "_________         :::::::::::::::::::::::::         _________" << endl;
@@ -4417,7 +4671,7 @@ void CellTimeUI(int floor, int wave, int keywave){
 void CellTime(Entity& Player){
 
     int Action;
-    int KeyWave = 99;//Wave to be able to move up a Floor (Should start after Wave 3)
+    int KeyWave = 3;//Wave to be able to move up a Floor (Should start after Wave 3)
     bool validchoice = false;
 
 
@@ -4444,11 +4698,14 @@ void CellTime(Entity& Player){
             break;
 
             case 1:
+            if (Floor == 0){
             CellRest(Player);
             validchoice = true;
+            }
             break;
 
             case 2:
+            if (Floor == 0){
             cout << "\t" << Player.Name << " moves toward the arena's gate";
             sleep(2);
             clear();
@@ -4456,11 +4713,14 @@ void CellTime(Entity& Player){
             clear();
             ShuffleTime(Player);
             validchoice = true;
+            }
             break;
 
             case 3:
+            if (Floor == 0){
             CellPrisontalk(Player);
             validchoice = true;
+            }
             break;
 
             case 5:
@@ -4489,6 +4749,12 @@ void CellTime(Entity& Player){
             break;
         }
     }
+
+    if (MiniBossEffects.empty() == true){
+        BossEffectsReset();
+    }
+    CurrentBossEffect = MiniBossEffects[size(MiniBossEffects)-1];
+    MiniBossEffects.pop_back();
 }
 
 
@@ -4652,4 +4918,3 @@ void ClassChoice(Entity& Player){
 }
     clear();
 }
-
